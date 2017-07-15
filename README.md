@@ -41,7 +41,7 @@ but without exposing this in its API, so that theoretically in the future this i
 History
 ---
 
-Historically, this code was part of [MariaDB4j](https://github.com/vorburger/MariaDB4j/),
+Historically, this code was part of [MariaDB4j](https://github.com/vorburger/MariaDB4j/) (and this is why it's initial version was 3.0.0),
 but was it later split into a separate project. This was done to make it usable in separate projects
 (originally for a possible [POC to launch Ansible Networking CLI commands](https://github.com/vorburger/opendaylight-ansible/)
 from [OpenDaylight](http://www.opendaylight.org)).
