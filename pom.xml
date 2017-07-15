@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>ch.vorburger.exec</groupId>
-  <artifactId>exec-core</artifactId>
+  <artifactId>exec</artifactId>
   <version>3.0.0-SNAPSHOT</version>
 
   <scm>
