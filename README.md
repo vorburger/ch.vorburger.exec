@@ -24,6 +24,7 @@ ManagedProcess pb = new ManagedProcessBuilder("someExec").build();
 pb.addArgument("arg1");
 pb.setWorkingDirectory(new File("/tmp"));
 pb.getEnvironment().put("ENV_VAR", "...");
+pb.addStdOut(new BufferedOutputStream(new FileOutputStream(outputFile)));
 ManagedProcess p = pb.build();
 
 p.start();
