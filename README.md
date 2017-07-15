@@ -45,4 +45,13 @@ but was it later split into a separate project. This was done to make it usable 
 (originally for a possible [POC to launch Ansible Networking CLI commands](https://github.com/vorburger/opendaylight-ansible/)
 from [OpenDaylight](http://www.opendaylight.org)).
 
-Contributions, patches, forks more than welcome!
+ToDo
+---
+
+This library is currently used to control daemon style external executables. 
+To launch a process which returns binary (or massive textual) output to its STDOUT
+(and, presumably, have that piped into a java.io.OutputStream), it would need some tweaks.
+This would include making the enabled-by-default logging into slf4j, and the built-in
+startAndWaitForConsoleMessageMaxMs which collects output, a more configurable option.
+
+Contributions & patches more than welcome!
