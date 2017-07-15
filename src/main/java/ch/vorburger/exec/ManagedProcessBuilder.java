@@ -22,6 +22,9 @@ package ch.vorburger.exec;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.exec.CommandLine;
@@ -54,7 +57,9 @@ public class ManagedProcessBuilder {
     protected boolean destroyOnShutdown = true;
     protected int consoleBufferMaxLines = 100;
     protected OutputStreamLogDispatcher outputStreamLogDispatcher = new OutputStreamLogDispatcher();
-
+    protected List<OutputStream> stdOuts = new ArrayList<OutputStream>();
+    protected List<OutputStream> stdErrs = new ArrayList<OutputStream>();
+    
     public ManagedProcessBuilder(String executable) throws ManagedProcessException {
         commonsExecCommandLine = new CommandLine(executable);
         this.environment = initialEnvironment();
@@ -199,11 +204,21 @@ public class ManagedProcessBuilder {
 
     public ManagedProcess build() {
         return new ManagedProcess(getCommandLine(), directory, environment, inputStream, destroyOnShutdown, consoleBufferMaxLines,
-                outputStreamLogDispatcher);
+                outputStreamLogDispatcher, stdOuts, stdErrs);
     }
 
     public void setInputStream(InputStream inputStream) {
         this.inputStream = inputStream;
+    }
+
+    public ManagedProcessBuilder addStdOut(OutputStream stdOutput) {
+        this.stdOuts.add(stdOutput);
+        return this;
+    }
+
+    public ManagedProcessBuilder addStdErr(OutputStream stdError) {
+        this.stdErrs.add(stdError);
+        return this;
     }
 
     /* package-local... let's keep ch.vorburger.exec's API separate from Apache Commons Exec, so it
