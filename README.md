@@ -20,19 +20,25 @@ Launching external processes from Java using the raw java.lang.ProcessBuilder AP
 This library makes it truly convenient:
 
 ```java
-ManagedProcess pb = new ManagedProcessBuilder("someExec").build();
-pb.addArgument("arg1");
-pb.setWorkingDirectory(new File("/tmp"));
-pb.getEnvironment().put("ENV_VAR", "...");
-pb.addStdOut(new BufferedOutputStream(new FileOutputStream(outputFile)));
-ManagedProcess p = pb.build();
+ManagedProcessBuilder pb = new ManagedProcessBuilder("someExec")
+    .addArgument("arg1");
+    .setWorkingDirectory(new File("/tmp"));
+    .getEnvironment().put("ENV_VAR", "...");
+    .setDestroyOnShutdown(true)
+    .addStdOut(new BufferedOutputStream(new FileOutputStream(outputFile)))
+    .setConsoleBufferMaxLines(7000);  // used by startAndWaitForConsoleMessageMaxMs
 
+ManagedProcess p = pb.build();
 p.start();
 p.isAlive();
 p.waitForExit();
 // OR: p.waitForExitMaxMsOrDestroy(5000);
 // OR: p.startAndWaitForConsoleMessageMaxMs("Successfully started", 3000);
 p.exitValue();
+// OR: p.destroy();
+
+// This works even while it's running, not just when it exited
+String output = p.getConsole();
 ```
 
 It currently internally uses Apache Commons Exec by building on top, extending and wrapping it,
