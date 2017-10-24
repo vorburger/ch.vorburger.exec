@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,19 +33,19 @@ import org.apache.commons.exec.util.StringUtils;
 
 /**
  * Builder for ManagedProcess.
- * 
+ *
  * <p>This is inspired by {@link java.lang.ProcessBuilder} &amp;
  * {@link org.apache.commons.exec.CommandLine}, and/but:
- * 
+ *
  * <p>It offers to add java.io.File arguments, and makes sure that their absolute path is used.
- * 
+ *
  * <p>If no directory is set, it automatically sets the initial working directory using the directory
  * of executable if it was a File, and thus makes sure an initial working directory is always passed
  * to the process.
- * 
+ *
  * <p>It intentionally doesn't offer "parsing" space delimited command "lines", but forces you to set
  * an executable and add arguments.
- * 
+ *
  * @author Michael Vorburger
  */
 public class ManagedProcessBuilder {
@@ -59,7 +59,7 @@ public class ManagedProcessBuilder {
     protected OutputStreamLogDispatcher outputStreamLogDispatcher = new OutputStreamLogDispatcher();
     protected List<OutputStream> stdOuts = new ArrayList<OutputStream>();
     protected List<OutputStream> stdErrs = new ArrayList<OutputStream>();
-    
+
     public ManagedProcessBuilder(String executable) throws ManagedProcessException {
         commonsExecCommandLine = new CommandLine(executable);
         this.environment = initialEnvironment();
@@ -86,7 +86,7 @@ public class ManagedProcessBuilder {
     /**
      * Adds a File as a argument to the command. This uses {@link File#getCanonicalPath()}, which is
      * usually what you'll actually want when launching external processes.
-     * 
+     *
      * @param arg the File to add
      * @return this
      * @throws IOException if File getCanonicalPath() fails
@@ -99,7 +99,7 @@ public class ManagedProcessBuilder {
 
     /**
      * Adds an argument to the command.
-     * 
+     *
      * @param arg the String Argument to add. It will be escaped with single or double quote if it contains a space.
      * @return this
      * @see ProcessBuilder
@@ -148,7 +148,7 @@ public class ManagedProcessBuilder {
 
     /**
      * Sets working directory.
-     * 
+     *
      * @param directory working directory to use for process to be launched
      * @return this
      * @see ProcessBuilder#directory(File)
@@ -160,7 +160,7 @@ public class ManagedProcessBuilder {
 
     /**
      * Get working directory used for process to be launched.
-     * 
+     *
      * @see ProcessBuilder#directory()
      */
     public File getWorkingDirectory() {
@@ -184,16 +184,18 @@ public class ManagedProcessBuilder {
         return this;
     }
 
-    public void setConsoleBufferMaxLines(int consoleBufferMaxLines) {
+    public ManagedProcessBuilder setConsoleBufferMaxLines(int consoleBufferMaxLines) {
         this.consoleBufferMaxLines = consoleBufferMaxLines;
+        return this;
     }
 
     public int getConsoleBufferMaxLines() {
         return consoleBufferMaxLines;
     }
 
-    public void setOutputStreamLogDispatcher(OutputStreamLogDispatcher outputStreamLogDispatcher) {
+    public ManagedProcessBuilder setOutputStreamLogDispatcher(OutputStreamLogDispatcher outputStreamLogDispatcher) {
         this.outputStreamLogDispatcher = outputStreamLogDispatcher;
+        return this;
     }
 
     public OutputStreamLogDispatcher getOutputStreamLogDispatcher() {
@@ -207,8 +209,9 @@ public class ManagedProcessBuilder {
                 outputStreamLogDispatcher, stdOuts, stdErrs);
     }
 
-    public void setInputStream(InputStream inputStream) {
+    public ManagedProcessBuilder setInputStream(InputStream inputStream) {
         this.inputStream = inputStream;
+        return this;
     }
 
     public ManagedProcessBuilder addStdOut(OutputStream stdOutput) {
@@ -228,9 +231,10 @@ public class ManagedProcessBuilder {
             if (commonsExecCommandLine.isFile()) {
                 File exec = new File(commonsExecCommandLine.getExecutable());
                 File dir = exec.getParentFile();
-                if (dir == null)
-                    throw new IllegalStateException(
+                if (dir == null) {
+					throw new IllegalStateException(
                             "directory MUST be set (and could not be auto-determined from executable, although it was a File)");
+				}
                 this.setWorkingDirectory(dir);
                 // DO NOT } else {
                 // throw new
