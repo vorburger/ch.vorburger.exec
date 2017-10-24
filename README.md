@@ -16,14 +16,14 @@ Usage
 ---
 
 Launching external processes from Java using the raw java.lang.ProcessBuilder API directly can be a little cumbersome.
-[Apache Commons Exec](https://commons.apache.org/proper/commons-exec/) makes it a bit easier, but lacks some convenience. 
+[Apache Commons Exec](https://commons.apache.org/proper/commons-exec/) makes it a bit easier, but lacks some convenience.
 This library makes it truly convenient:
 
 ```java
 ManagedProcessBuilder pb = new ManagedProcessBuilder("someExec")
-    .addArgument("arg1");
-    .setWorkingDirectory(new File("/tmp"));
-    .getEnvironment().put("ENV_VAR", "...");
+    .addArgument("arg1")
+    .setWorkingDirectory(new File("/tmp"))
+    .getEnvironment().put("ENV_VAR", "...")
     .setDestroyOnShutdown(true)
     .addStdOut(new BufferedOutputStream(new FileOutputStream(outputFile)))
     .setConsoleBufferMaxLines(7000);  // used by startAndWaitForConsoleMessageMaxMs
@@ -55,7 +55,7 @@ from [OpenDaylight](http://www.opendaylight.org)).
 ToDo
 ---
 
-This library is currently used to control daemon style external executables. 
+This library is currently used to control daemon style external executables.
 To launch a process which returns binary (or massive textual) output to its STDOUT
 (and, presumably, have that piped into a java.io.OutputStream), it would need some tweaks.
 This would include making the enabled-by-default logging into slf4j, and the built-in
