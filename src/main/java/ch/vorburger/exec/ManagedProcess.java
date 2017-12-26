@@ -27,18 +27,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecuteResultHandler;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ExecuteException;
-import org.apache.commons.exec.ExecuteWatchdog;
-import org.apache.commons.exec.Executor;
-import org.apache.commons.exec.ProcessDestroyer;
-import org.apache.commons.exec.PumpStreamHandler;
-import org.apache.commons.exec.ShutdownHookProcessDestroyer;
+import org.apache.commons.exec.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +50,8 @@ import org.slf4j.LoggerFactory;
  *      this; could be switched later, if there is any need.
  *
  * @author Michael Vorburger
+ * @author Neelesh Shastry
+ * @author William Dutton
  */
 public class ManagedProcess {
 
@@ -65,10 +60,10 @@ public class ManagedProcess {
 
     private final CommandLine commandLine;
     private final Executor executor = new DefaultExecutor();
-    private final DefaultExecuteResultHandler resultHandler = new LoggingExecuteResultHandler();
     private final ExecuteWatchdog watchDog = new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT);
     private final ProcessDestroyer shutdownHookProcessDestroyer = new LoggingShutdownHookProcessDestroyer();
     private final Map<String, String> environment;
+    private CompositeExecuteResultHandler resultHandler;
     private final InputStream input;
     private final boolean destroyOnShutdown;
     private final int consoleBufferMaxLines;
@@ -93,7 +88,7 @@ public class ManagedProcess {
      */
     ManagedProcess(CommandLine commandLine, File directory, Map<String, String> environment,
             InputStream input, boolean destroyOnShutdown, int consoleBufferMaxLines, OutputStreamLogDispatcher outputStreamLogDispatcher,
-            List<OutputStream> stdOuts, List<OutputStream> stderr) {
+            List<OutputStream> stdOuts, List<OutputStream> stderr, ManagedProcessListener listener) {
         this.commandLine = commandLine;
         this.environment = environment;
         if (input != null) {
@@ -110,6 +105,7 @@ public class ManagedProcess {
         this.destroyOnShutdown = destroyOnShutdown;
         this.consoleBufferMaxLines = consoleBufferMaxLines;
         this.outputStreamLogDispatcher = outputStreamLogDispatcher;
+        this.resultHandler = new CompositeExecuteResultHandler(Arrays.asList(new LoggingExecuteResultHandler(),new ProcessResultHandler(listener)));
         this.stdouts = new MultiOutputStream();
         this.stderrs = new MultiOutputStream();
 		for (OutputStream stdOut : stdOuts) {
@@ -496,6 +492,60 @@ public class ManagedProcess {
                 logger.error(procLongName() + " failed unexpectedly", e);
             }
             isAlive = false;
+        }
+    }
+
+    public class ProcessResultHandler extends DefaultExecuteResultHandler {
+        private final ManagedProcessListener listener;
+
+        public ProcessResultHandler(ManagedProcessListener listener) {
+            this.listener = listener;
+        }
+        @Override
+        public void onProcessComplete(int exitValue) {
+            super.onProcessComplete(exitValue);
+            if(listener != null) {
+                listener.onProcessComplete(exitValue);
+            }
+        }
+
+        @Override
+        public void onProcessFailed(ExecuteException processFailedException) {
+            if(listener != null) {
+                listener.onProcessFailed(processFailedException.getExitValue(), processFailedException);
+            }
+        }
+    }
+
+    public class CompositeExecuteResultHandler extends DefaultExecuteResultHandler {
+        private final List<? extends ExecuteResultHandler> handlers;
+
+        public CompositeExecuteResultHandler(List<? extends ExecuteResultHandler> handlers) {
+            this.handlers = handlers;
+        }
+
+        @Override
+        public void onProcessComplete(int exitValue) {
+            super.onProcessComplete(exitValue);
+            for(ExecuteResultHandler handler : handlers) {
+                try {
+                    handler.onProcessComplete(exitValue);
+                }catch (Exception e){
+                    logger.error(procLongName() +" process handler failed on processComplete",e);
+                }
+            }
+        }
+
+        @Override
+        public void onProcessFailed(ExecuteException processFailedException) {
+            super.onProcessFailed(processFailedException);
+            for(ExecuteResultHandler handler : handlers) {
+                try {
+                    handler.onProcessFailed(processFailedException);
+                }catch (Exception e){
+                    logger.error(procLongName() +" process handler failed on processComplete",e);
+                }
+            }
         }
     }
 
