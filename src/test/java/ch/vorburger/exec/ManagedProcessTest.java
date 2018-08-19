@@ -35,7 +35,6 @@ public class ManagedProcessTest {
 
     @Test
     public void onProcessCompleteInvokedOnCustomListener() throws Exception {
-
         TestListener listener = new TestListener();
 
         SomeSelfTerminatingExec exec = someSelfTerminatingExec(listener);
@@ -44,30 +43,16 @@ public class ManagedProcessTest {
         assertEquals(Integer.MIN_VALUE,listener.failureExitValue);
         assertNull(listener.t);
     }
+
     @Test
     public void onProcessFailedInvokedOnCustomListener() throws Exception {
-        class TestListener implements ManagedProcessListener{
-            int successExitValue = Integer.MIN_VALUE;
-            int failureExitValue = Integer.MIN_VALUE;
-            Throwable t;
-            @Override
-            public void onProcessComplete(int exitValue) {
-                successExitValue = exitValue;
-            }
-
-            @Override
-            public void onProcessFailed(int exitValue, Throwable throwable) {
-                failureExitValue = exitValue;
-                t = throwable;
-            }
-        }
         TestListener listener = new TestListener();
 
         SomeSelfTerminatingExec exec = someSelfTerminatingFailingExec(listener);
         try {
             exec.proc.startAndWaitForConsoleMessageMaxMs(exec.msgToWaitFor, 1000);
             fail("Process expected to fail. Should've thrown a ManagedProcessException");
-        }catch(ManagedProcessException e){
+        } catch(ManagedProcessException e) {
 
         }
         assertEquals(Integer.MIN_VALUE,listener.successExitValue);
@@ -173,10 +158,10 @@ public class ManagedProcessTest {
     }
 
     static class SomeSelfTerminatingExec {
-
         ManagedProcess proc;
         String msgToWaitFor;
     }
+
     protected SomeSelfTerminatingExec someSelfTerminatingExec() throws ManagedProcessException {
         return someSelfTerminatingExec(null);
     }
@@ -206,6 +191,9 @@ public class ManagedProcessTest {
         if (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC) {
             r.proc = new ManagedProcessBuilder("ls").addArgument("-4").setProcessListener(listener).build();
             r.msgToWaitFor = "usage";
+        } else if (SystemUtils.IS_OS_WINDOWS) {
+            r.proc = new ManagedProcessBuilder("dir").addArgument("/?").setProcessListener(listener).build();
+            r.msgToWaitFor = "Displays a list of files and subdirectories in a directory.";
         } else {
             throw new ManagedProcessException("Unexpected Platform, improve the test dude...");
         }
@@ -247,5 +235,4 @@ public class ManagedProcessTest {
             t = throwable;
         }
     }
-
 }

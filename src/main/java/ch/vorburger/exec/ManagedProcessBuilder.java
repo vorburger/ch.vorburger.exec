@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.ExecuteResultHandler;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.exec.util.StringUtils;
 
@@ -69,7 +68,7 @@ public class ManagedProcessBuilder {
     }
 
     public ManagedProcessBuilder setProcessListener(ManagedProcessListener listener) {
-        this.listener= listener;
+        this.listener = listener;
         return this;
     }
 
