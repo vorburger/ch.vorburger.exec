@@ -224,6 +224,7 @@ public class ManagedProcessTest {
         int successExitValue = Integer.MIN_VALUE;
         int failureExitValue = Integer.MIN_VALUE;
         Throwable t;
+        
         @Override
         public void onProcessComplete(int exitValue) {
             successExitValue = exitValue;
