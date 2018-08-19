@@ -47,6 +47,8 @@ import org.apache.commons.exec.util.StringUtils;
  * an executable and add arguments.
  *
  * @author Michael Vorburger
+ * @author Neelesh Shastry
+ * @author William Dutton
  */
 public class ManagedProcessBuilder {
 
@@ -57,8 +59,18 @@ public class ManagedProcessBuilder {
     protected boolean destroyOnShutdown = true;
     protected int consoleBufferMaxLines = 100;
     protected OutputStreamLogDispatcher outputStreamLogDispatcher = new OutputStreamLogDispatcher();
+    protected ManagedProcessListener listener;
     protected List<OutputStream> stdOuts = new ArrayList<OutputStream>();
     protected List<OutputStream> stdErrs = new ArrayList<OutputStream>();
+
+    public ManagedProcessListener getProcessListener() {
+        return listener;
+    }
+
+    public ManagedProcessBuilder setProcessListener(ManagedProcessListener listener) {
+        this.listener = listener;
+        return this;
+    }
 
     public ManagedProcessBuilder(String executable) throws ManagedProcessException {
         commonsExecCommandLine = new CommandLine(executable);
@@ -206,7 +218,7 @@ public class ManagedProcessBuilder {
 
     public ManagedProcess build() {
         return new ManagedProcess(getCommandLine(), directory, environment, inputStream, destroyOnShutdown, consoleBufferMaxLines,
-                outputStreamLogDispatcher, stdOuts, stdErrs);
+                outputStreamLogDispatcher, stdOuts, stdErrs, listener);
     }
 
     public ManagedProcessBuilder setInputStream(InputStream inputStream) {

@@ -20,8 +20,7 @@
 package ch.vorburger.exec;
 
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.Assert;
@@ -33,6 +32,33 @@ import org.junit.Test;
  * @author Michael Vorburger
  */
 public class ManagedProcessTest {
+
+    @Test
+    public void onProcessCompleteInvokedOnCustomListener() throws Exception {
+        TestListener listener = new TestListener();
+
+        SomeSelfTerminatingExec exec = someSelfTerminatingExec(listener);
+        exec.proc.startAndWaitForConsoleMessageMaxMs(exec.msgToWaitFor, 1000);
+        assertNotEquals(Integer.MIN_VALUE,listener.successExitValue);
+        assertEquals(Integer.MIN_VALUE,listener.failureExitValue);
+        assertNull(listener.t);
+    }
+
+    @Test
+    public void onProcessFailedInvokedOnCustomListener() throws Exception {
+        TestListener listener = new TestListener();
+
+        SomeSelfTerminatingExec exec = someSelfTerminatingFailingExec(listener);
+        try {
+            exec.proc.startAndWaitForConsoleMessageMaxMs(exec.msgToWaitFor, 1000);
+            fail("Process expected to fail. Should've thrown a ManagedProcessException");
+        } catch(ManagedProcessException e) {
+
+        }
+        assertEquals(Integer.MIN_VALUE,listener.successExitValue);
+        assertNotEquals(Integer.MIN_VALUE,listener.failureExitValue);
+        assertNotNull(listener.t);
+    }
 
     @Test
     public void testBasics() throws Exception {
@@ -132,23 +158,42 @@ public class ManagedProcessTest {
     }
 
     static class SomeSelfTerminatingExec {
-
         ManagedProcess proc;
         String msgToWaitFor;
     }
 
     protected SomeSelfTerminatingExec someSelfTerminatingExec() throws ManagedProcessException {
+        return someSelfTerminatingExec(null);
+    }
+
+    protected SomeSelfTerminatingExec someSelfTerminatingExec(ManagedProcessListener listener) throws ManagedProcessException {
         SomeSelfTerminatingExec r = new SomeSelfTerminatingExec();
         if (SystemUtils.IS_OS_WINDOWS) {
-            r.proc = new ManagedProcessBuilder("cmd.exe").addArgument("/C").addArgument("dir").addArgument("/X").build();
+            r.proc = new ManagedProcessBuilder("cmd.exe").addArgument("/C").addArgument("dir").addArgument("/X")
+                    .setProcessListener(listener).build();
             r.msgToWaitFor = "bytes free";
         } else if (SystemUtils.IS_OS_SOLARIS) {
-            r.proc = new ManagedProcessBuilder("true").addArgument("--version").build();
+            r.proc = new ManagedProcessBuilder("true").addArgument("--version").setProcessListener(listener).build();
             r.msgToWaitFor = "true (GNU coreutils)";
         } else if (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC) {
             r.proc = new ManagedProcessBuilder("echo").addArgument("\"Lorem ipsum dolor sit amet, consectetur adipisci elit, "
-                    + " sed eiusmod tempor incidunt ut \nlabore et dolore magna aliqua.\"").build();
+                    + " sed eiusmod tempor incidunt ut \nlabore et dolore magna aliqua.\"").setProcessListener(listener).build();
             r.msgToWaitFor = "incidunt";
+        } else {
+            throw new ManagedProcessException("Unexpected Platform, improve the test dude...");
+        }
+
+        return r;
+    }
+
+    protected SomeSelfTerminatingExec someSelfTerminatingFailingExec(ManagedProcessListener listener) throws ManagedProcessException {
+        SomeSelfTerminatingExec r = new SomeSelfTerminatingExec();
+        if (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC) {
+            r.proc = new ManagedProcessBuilder("ls").addArgument("-4").setProcessListener(listener).build();
+            r.msgToWaitFor = "usage";
+        } else if (SystemUtils.IS_OS_WINDOWS) {
+            r.proc = new ManagedProcessBuilder("dir").addArgument("/?").setProcessListener(listener).build();
+            r.msgToWaitFor = "Displays a list of files and subdirectories in a directory.";
         } else {
             throw new ManagedProcessException("Unexpected Platform, improve the test dude...");
         }
@@ -175,4 +220,20 @@ public class ManagedProcessTest {
         // can not: p.exitValue();
     }
 
+    class TestListener implements ManagedProcessListener{
+        int successExitValue = Integer.MIN_VALUE;
+        int failureExitValue = Integer.MIN_VALUE;
+        Throwable t;
+        
+        @Override
+        public void onProcessComplete(int exitValue) {
+            successExitValue = exitValue;
+        }
+
+        @Override
+        public void onProcessFailed(int exitValue, Throwable throwable) {
+            failureExitValue = exitValue;
+            t = throwable;
+        }
+    }
 }
