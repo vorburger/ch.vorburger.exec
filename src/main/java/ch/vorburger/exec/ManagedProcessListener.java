@@ -20,7 +20,7 @@
 package ch.vorburger.exec;
 
 /**
- * Listener interface clients can implement to get notified about MariaDB process states
+ * Listener interface clients can implement to get notified about a process states
  *
  * @author Neelesh Shastry
  */

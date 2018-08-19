@@ -33,10 +33,17 @@
       <email>mike@vorburger.ch</email>
       <url>http://www.vorburger.ch</url>
     </developer>
+    <developer>
+      <id>duttonw</id>
+      <name>William Dutton</name>
+      <email>will.dutt@gmail.com</email>
+    </developer>
   </developers>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
 
   <build>
@@ -46,8 +53,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.0</version>
         <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
+          <source>${maven.compiler.source}</source>
+          <target>${maven.compiler.target}</target>
         </configuration>
       </plugin>
       <plugin>
