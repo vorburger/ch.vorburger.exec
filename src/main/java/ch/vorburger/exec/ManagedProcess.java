@@ -1,8 +1,8 @@
 /*
  * #%L
- * MariaDB4j
+ * ch.vorburger.exec
  * %%
- * Copyright (C) 2012 - 2014 Michael Vorburger
+ * Copyright (C) 2012 - 2018 Michael Vorburger
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -125,13 +125,13 @@ public class ManagedProcess implements ManagedProcessState {
         this.resultHandler = new CompositeExecuteResultHandler(this, Arrays.asList(new LoggingExecuteResultHandler(this), new ProcessResultHandler(listener)));
         this.stdouts = new MultiOutputStream();
         this.stderrs = new MultiOutputStream();
-		for (OutputStream stdOut : stdOuts) {
-			stdouts.addOutputStream(stdOut);
-		}
+        for (OutputStream stdOut : stdOuts) {
+            stdouts.addOutputStream(stdOut);
+        }
 
-		for (OutputStream stde : stderr) {
-			stderrs.addOutputStream(stde);
-		}
+        for (OutputStream stde : stderr) {
+            stderrs.addOutputStream(stde);
+        }
     }
 
     // stolen from commons-io IOUtiles (@since v2.5)
@@ -164,8 +164,8 @@ public class ManagedProcess implements ManagedProcessState {
                             + " is still running, use another ManagedProcess instance to launch another one");
         }
         if (logger.isInfoEnabled()) {
-			logger.info("Starting {}", getProcLongName());
-		}
+            logger.info("Starting {}", getProcLongName());
+        }
 
         PumpStreamHandler outputHandler = new PumpStreamHandler(stdouts, stderrs, input);
         executor.setStreamHandler(outputHandler);
@@ -233,7 +233,8 @@ public class ManagedProcess implements ManagedProcessState {
      * @throws ManagedProcessException for problems such as if the process already exited (without
      *             the message ever appearing in the Console)
      */
-    public boolean startAndWaitForConsoleMessageMaxMs(String messageInConsole,
+    @Override
+	public boolean startAndWaitForConsoleMessageMaxMs(String messageInConsole,
             long maxWaitUntilReturning) throws ManagedProcessException {
         startPreparation();
 
@@ -318,7 +319,8 @@ public class ManagedProcess implements ManagedProcessState {
      * @throws ManagedProcessException if the Process is already stopped (either because destroy()
      *             already explicitly called, or it terminated by itself, or it was never started)
      */
-    public void destroy() throws ManagedProcessException {
+    @Override
+	public void destroy() throws ManagedProcessException {
         //
         // if destroy() is ever giving any trouble, the org.openqa.selenium.os.ProcessUtils may be
         // of
@@ -329,8 +331,8 @@ public class ManagedProcess implements ManagedProcessState {
                     + " was already stopped (or never started)");
         }
         if (logger.isDebugEnabled()) {
-			logger.debug("Going to destroy {}", getProcLongName());
-		}
+            logger.debug("Going to destroy {}", getProcLongName());
+        }
 
         watchDog.destroyProcess();
 
@@ -342,8 +344,8 @@ public class ManagedProcess implements ManagedProcessState {
         }
 
         if (logger.isInfoEnabled()) {
-			logger.info("Successfully destroyed {}", getProcLongName());
-		}
+            logger.info("Successfully destroyed {}", getProcLongName());
+        }
 
         isAlive = false;
     }
@@ -355,7 +357,8 @@ public class ManagedProcess implements ManagedProcessState {
      *
      * @return <code>true</code> if this process is alive; <code>false</code> otherwise.
      */
-    public boolean isAlive() {
+    @Override
+	public boolean isAlive() {
         // NOPE: return !resultHandler.hasResult();
         return isAlive;
     }
@@ -363,7 +366,8 @@ public class ManagedProcess implements ManagedProcessState {
     /**
      * Allows <CODE>LoggingExecuteResultHandler</CODE> to notify if process has halted (success or failure)
      */
-    public void notifyProcessHalted() {
+    @Override
+	public void notifyProcessHalted() {
         if (watchDog.isWatching()) {
             logger.error("Have been notified that process is finished but watchdog belives its still watching it");
         }
@@ -379,7 +383,8 @@ public class ManagedProcess implements ManagedProcessState {
      * @exception ManagedProcessException if the subprocess represented by this
      *                <code>ManagedProcess</code> object has not yet terminated.
      */
-    public int exitValue() throws ManagedProcessException {
+    @Override
+	public int exitValue() throws ManagedProcessException {
         try {
             return resultHandler.getExitValue();
         } catch (IllegalStateException e) {
@@ -403,7 +408,8 @@ public class ManagedProcess implements ManagedProcessState {
      * @return exit value (or INVALID_EXITVALUE if {@link #destroy()} was used)
      * @throws ManagedProcessException see above
      */
-    public int waitForExit() throws ManagedProcessException {
+    @Override
+	public int waitForExit() throws ManagedProcessException {
         logger.info("Thread is now going to wait for this process to terminate itself: {}",
                 getProcLongName());
         return waitForExitMaxMsWithoutLog(-1);
@@ -418,7 +424,8 @@ public class ManagedProcess implements ManagedProcessState {
      *         was used
      * @throws ManagedProcessException see above
      */
-    public int waitForExitMaxMs(long maxWaitUntilReturning) throws ManagedProcessException {
+    @Override
+	public int waitForExitMaxMs(long maxWaitUntilReturning) throws ManagedProcessException {
         logger.info("Thread is now going to wait max. {}ms for process to terminate itself: {}",
                 maxWaitUntilReturning, getProcLongName());
         return waitForExitMaxMsWithoutLog(maxWaitUntilReturning);
@@ -432,8 +439,8 @@ public class ManagedProcess implements ManagedProcessState {
                 resultHandler.waitFor(maxWaitUntilReturning);
                 checkResult();
                 if (!isAlive()) {
-					return exitValue();
-				}
+                    return exitValue();
+                }
                 return INVALID_EXITVALUE;
             }
             resultHandler.waitFor();
@@ -452,7 +459,8 @@ public class ManagedProcess implements ManagedProcessState {
      * @param maxWaitUntilDestroyTimeout Time to wait
      * @throws ManagedProcessException see above
      */
-    public void waitForExitMaxMsOrDestroy(long maxWaitUntilDestroyTimeout)
+    @Override
+	public void waitForExitMaxMsOrDestroy(long maxWaitUntilDestroyTimeout)
             throws ManagedProcessException {
         waitForExitMaxMs(maxWaitUntilDestroyTimeout);
         if (isAlive()) {
@@ -469,21 +477,24 @@ public class ManagedProcess implements ManagedProcessState {
         }
     }
 
-    public boolean watchDogKilledProcess() {
+    @Override
+	public boolean watchDogKilledProcess() {
         return watchDog.killedProcess();
     }
 
     // ---
 
-    public String getConsole() {
+    @Override
+	public String getConsole() {
         if (console != null) {
-			return console.getRecentLines();
-		} else {
-			return "";
-		}
+            return console.getRecentLines();
+        } else {
+            return "";
+        }
     }
 
-    public String getLastConsoleLines() {
+    @Override
+	public String getLastConsoleLines() {
         return ", last " + consoleBufferMaxLines + " lines of console:\n" + getConsole();
     }
 
@@ -499,7 +510,8 @@ public class ManagedProcess implements ManagedProcessState {
         return procShortName;
     }
 
-    public String getProcLongName() {
+    @Override
+	public String getProcLongName() {
         return "Program "
                 + commandLine.toString()
                 + (executor.getWorkingDirectory() == null ? "" : " (in working directory "

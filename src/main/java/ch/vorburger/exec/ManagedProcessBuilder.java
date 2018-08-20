@@ -1,8 +1,8 @@
 /*
  * #%L
- * MariaDB4j
+ * ch.vorburger.exec
  * %%
- * Copyright (C) 2012 - 2014 Michael Vorburger
+ * Copyright (C) 2012 - 2018 Michael Vorburger
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,8 +60,8 @@ public class ManagedProcessBuilder {
     protected int consoleBufferMaxLines = 100;
     protected OutputStreamLogDispatcher outputStreamLogDispatcher = new OutputStreamLogDispatcher();
     protected ManagedProcessListener listener;
-    protected List<OutputStream> stdOuts = new ArrayList<OutputStream>();
-    protected List<OutputStream> stdErrs = new ArrayList<OutputStream>();
+    protected List<OutputStream> stdOuts = new ArrayList<>();
+    protected List<OutputStream> stdErrs = new ArrayList<>();
 
     public ManagedProcessListener getProcessListener() {
         return listener;
@@ -244,9 +244,9 @@ public class ManagedProcessBuilder {
                 File exec = new File(commonsExecCommandLine.getExecutable());
                 File dir = exec.getParentFile();
                 if (dir == null) {
-					throw new IllegalStateException(
+                    throw new IllegalStateException(
                             "directory MUST be set (and could not be auto-determined from executable, although it was a File)");
-				}
+                }
                 this.setWorkingDirectory(dir);
                 // DO NOT } else {
                 // throw new

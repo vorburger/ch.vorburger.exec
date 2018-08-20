@@ -1,8 +1,8 @@
 /*
  * #%L
- * MariaDB4j
+ * ch.vorburger.exec
  * %%
- * Copyright (C) 2012 - 2014 Michael Vorburger
+ * Copyright (C) 2012 - 2018 Michael Vorburger
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

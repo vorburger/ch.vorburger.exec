@@ -1,8 +1,8 @@
 /*
  * #%L
- * MariaDB4j
+ * ch.vorburger.exec
  * %%
- * Copyright (C) 2012 - 2014 Michael Vorburger
+ * Copyright (C) 2012 - 2018 Michael Vorburger
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,12 +32,12 @@ class ManagedProcessListenerInternal implements ManagedProcessListener {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Override
-	public void onProcessComplete(int exitValue) {
+    public void onProcessComplete(int exitValue) {
         logger.trace("Process completed exitValue: {}", exitValue);
     }
 
     @Override
-	public void onProcessFailed(int exitValue, Throwable throwable) {
+    public void onProcessFailed(int exitValue, Throwable throwable) {
         logger.trace("Process failed exitValue: {}", exitValue, throwable);
     }
 }
