@@ -10,11 +10,12 @@ import java.lang.invoke.MethodHandles;
 import static java.util.Objects.requireNonNull;
 
 /**
- * extends <CODE>DefaultExecuteResultHandler</CODE> with logging and notify state to initializing class
+ * Extends Commons Exec's {@link DefaultExecuteResultHandler} with logging and notify state to initializing class.
  */
 public class LoggingExecuteResultHandler extends DefaultExecuteResultHandler {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private ManagedProcessState managedProcessState;
+
+    private final ManagedProcessState managedProcessState;
 
     public LoggingExecuteResultHandler(ManagedProcessState managedProcessState) {
         super();

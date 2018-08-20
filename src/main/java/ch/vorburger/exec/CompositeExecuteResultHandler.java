@@ -13,8 +13,9 @@ import static java.util.Objects.requireNonNull;
 
 class CompositeExecuteResultHandler extends DefaultExecuteResultHandler {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     private final List<? extends ExecuteResultHandler> handlers;
-    private ManagedProcessState managedProcessState;
+    private final ManagedProcessState managedProcessState;
 
     public CompositeExecuteResultHandler(ManagedProcessState managedProcessState, List<? extends ExecuteResultHandler> handlers) {
         super();

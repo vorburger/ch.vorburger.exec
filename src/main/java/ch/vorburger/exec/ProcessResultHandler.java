@@ -22,7 +22,7 @@ class ProcessResultHandler extends DefaultExecuteResultHandler {
     @Override
     public void onProcessComplete(int exitValue) {
         super.onProcessComplete(exitValue);
-            listener.onProcessComplete(exitValue);
+        listener.onProcessComplete(exitValue);
     }
 
     @Override
