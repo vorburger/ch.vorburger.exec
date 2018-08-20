@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
@@ -20,7 +21,7 @@ class CompositeExecuteResultHandler extends DefaultExecuteResultHandler {
     public CompositeExecuteResultHandler(ManagedProcessState managedProcessState, List<? extends ExecuteResultHandler> handlers) {
         super();
         this.managedProcessState = requireNonNull(managedProcessState, "managedProcessState can't be null");
-        this.handlers = handlers;
+        this.handlers = new ArrayList<>(handlers);
     }
 
     @Override
