@@ -49,8 +49,8 @@ History
 
 Historically, this code was part of [MariaDB4j](https://github.com/vorburger/MariaDB4j/) (and this is why it's initial version was 3.0.0),
 but was it later split into a separate project. This was done to make it usable in separate projects
-(originally for a possible [POC to launch Ansible Networking CLI commands](https://github.com/vorburger/opendaylight-ansible/)
-from [OpenDaylight](http://www.opendaylight.org)).
+(originally for a possible POC to launch Ansible Networking CLI commands, later [to manage etcd servers in tests](https://github.com/etcd-io/jetcd/issues/361),
+both from [OpenDaylight](http://www.opendaylight.org)).
 
 ToDo
 ---
