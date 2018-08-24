@@ -1,6 +1,13 @@
 ch.vorburger.exec Release Notes
 ===============================
 
+v3.1.0 @ 2018-08-24
+---
+
+* @duttonw added @neeleshs's callback if the process crashes 
+* bumped 3rd-party dependencies
+
+
 v3.0.0 @ 2017-07-15
 ---
 
