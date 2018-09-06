@@ -195,7 +195,6 @@ public class ManagedProcess implements ManagedProcessState {
         } catch (IOException e) {
             throw new ManagedProcessException("Launch failed: " + commandLine, e);
         }
-        isAlive = watchDog.isWatching(); //check watchdog is watching as DefaultExecutor sets watchDog if process started successfully
 
         // We now must give the system a say 100ms chance to run the background
         // thread now, otherwise the resultHandler in checkResult() won't work.
@@ -216,6 +215,10 @@ public class ManagedProcess implements ManagedProcessState {
             throw handleInterruptedException(e);
         }
         checkResult();
+
+        // watchDog.isWatching() blocks if the process never started or already finished,
+        // so we have to do it only after checkResult() had a chance to throw ManagedProcessException
+        isAlive = watchDog.isWatching(); // check watchdog is watching as DefaultExecutor sets watchDog if process started successfully
     }
 
     /**

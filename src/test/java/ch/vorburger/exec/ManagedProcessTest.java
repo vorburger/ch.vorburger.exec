@@ -110,6 +110,12 @@ public class ManagedProcessTest {
         p.waitForExit();
     }
 
+    @Test(expected = ManagedProcessException.class)
+    public void startForMustFailForWrongExecutable() throws Exception {
+        ManagedProcess p = new ManagedProcessBuilder("someExec").build();
+        p.start();
+    }
+
     @Test
     public void testWaitForSeenMessageIfAlreadyTerminated() throws Exception {
         SomeSelfTerminatingExec exec = someSelfTerminatingExec();
