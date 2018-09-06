@@ -1,6 +1,10 @@
 ch.vorburger.exec Release Notes
 ===============================
 
+v3.1.1 @ 2018-09-06
+---
+* fixes #9 exec hangs when program not found
+
 v3.1.0 @ 2018-08-24
 ---
 
