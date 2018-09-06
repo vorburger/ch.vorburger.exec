@@ -34,9 +34,8 @@ class RollingLogOutputStream extends LogOutputStream {
 
     private final Collection<String> ringBuffer;
 
-    @SuppressWarnings("unchecked")
     RollingLogOutputStream(int maxLines) {
-        ringBuffer = new CircularFifoQueue(maxLines);
+        ringBuffer = new CircularFifoQueue<>(maxLines);
     }
 
     @Override
@@ -56,8 +55,8 @@ class RollingLogOutputStream extends LogOutputStream {
         StringBuilder sb = new StringBuilder();
         for (String line : ringBuffer) {
             if (sb.length() > 0) {
-				sb.append('\n');
-			}
+                sb.append('\n');
+            }
             sb.append(line);
         }
         return sb.toString();

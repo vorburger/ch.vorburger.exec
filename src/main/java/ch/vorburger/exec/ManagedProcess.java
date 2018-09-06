@@ -234,7 +234,7 @@ public class ManagedProcess implements ManagedProcessState {
      *             the message ever appearing in the Console)
      */
     @Override
-	public boolean startAndWaitForConsoleMessageMaxMs(String messageInConsole,
+    public boolean startAndWaitForConsoleMessageMaxMs(String messageInConsole,
             long maxWaitUntilReturning) throws ManagedProcessException {
         startPreparation();
 
@@ -320,7 +320,7 @@ public class ManagedProcess implements ManagedProcessState {
      *             already explicitly called, or it terminated by itself, or it was never started)
      */
     @Override
-	public void destroy() throws ManagedProcessException {
+    public void destroy() throws ManagedProcessException {
         //
         // if destroy() is ever giving any trouble, the org.openqa.selenium.os.ProcessUtils may be
         // of
@@ -358,7 +358,7 @@ public class ManagedProcess implements ManagedProcessState {
      * @return <code>true</code> if this process is alive; <code>false</code> otherwise.
      */
     @Override
-	public boolean isAlive() {
+    public boolean isAlive() {
         // NOPE: return !resultHandler.hasResult();
         return isAlive;
     }
@@ -367,7 +367,7 @@ public class ManagedProcess implements ManagedProcessState {
      * Allows <CODE>LoggingExecuteResultHandler</CODE> to notify if process has halted (success or failure)
      */
     @Override
-	public void notifyProcessHalted() {
+    public void notifyProcessHalted() {
         if (watchDog.isWatching()) {
             logger.error("Have been notified that process is finished but watchdog belives its still watching it");
         }
@@ -384,7 +384,7 @@ public class ManagedProcess implements ManagedProcessState {
      *                <code>ManagedProcess</code> object has not yet terminated.
      */
     @Override
-	public int exitValue() throws ManagedProcessException {
+    public int exitValue() throws ManagedProcessException {
         try {
             return resultHandler.getExitValue();
         } catch (IllegalStateException e) {
@@ -409,7 +409,7 @@ public class ManagedProcess implements ManagedProcessState {
      * @throws ManagedProcessException see above
      */
     @Override
-	public int waitForExit() throws ManagedProcessException {
+    public int waitForExit() throws ManagedProcessException {
         logger.info("Thread is now going to wait for this process to terminate itself: {}",
                 getProcLongName());
         return waitForExitMaxMsWithoutLog(-1);
@@ -425,7 +425,7 @@ public class ManagedProcess implements ManagedProcessState {
      * @throws ManagedProcessException see above
      */
     @Override
-	public int waitForExitMaxMs(long maxWaitUntilReturning) throws ManagedProcessException {
+    public int waitForExitMaxMs(long maxWaitUntilReturning) throws ManagedProcessException {
         logger.info("Thread is now going to wait max. {}ms for process to terminate itself: {}",
                 maxWaitUntilReturning, getProcLongName());
         return waitForExitMaxMsWithoutLog(maxWaitUntilReturning);
@@ -460,7 +460,7 @@ public class ManagedProcess implements ManagedProcessState {
      * @throws ManagedProcessException see above
      */
     @Override
-	public void waitForExitMaxMsOrDestroy(long maxWaitUntilDestroyTimeout)
+    public void waitForExitMaxMsOrDestroy(long maxWaitUntilDestroyTimeout)
             throws ManagedProcessException {
         waitForExitMaxMs(maxWaitUntilDestroyTimeout);
         if (isAlive()) {
@@ -478,14 +478,14 @@ public class ManagedProcess implements ManagedProcessState {
     }
 
     @Override
-	public boolean watchDogKilledProcess() {
+    public boolean watchDogKilledProcess() {
         return watchDog.killedProcess();
     }
 
     // ---
 
     @Override
-	public String getConsole() {
+    public String getConsole() {
         if (console != null) {
             return console.getRecentLines();
         } else {
@@ -494,7 +494,7 @@ public class ManagedProcess implements ManagedProcessState {
     }
 
     @Override
-	public String getLastConsoleLines() {
+    public String getLastConsoleLines() {
         return ", last " + consoleBufferMaxLines + " lines of console:\n" + getConsole();
     }
 
@@ -511,7 +511,7 @@ public class ManagedProcess implements ManagedProcessState {
     }
 
     @Override
-	public String getProcLongName() {
+    public String getProcLongName() {
         return "Program "
                 + commandLine.toString()
                 + (executor.getWorkingDirectory() == null ? "" : " (in working directory "

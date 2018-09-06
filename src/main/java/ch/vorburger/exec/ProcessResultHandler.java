@@ -27,7 +27,6 @@ class ProcessResultHandler extends DefaultExecuteResultHandler {
 
     /**
      * extends <CODE>DefaultExecuteResultHandler</CODE> used for asynchronous process handling.
-     * @param listener
      */
     public ProcessResultHandler(ManagedProcessListener listener) {
         if (listener == null) {

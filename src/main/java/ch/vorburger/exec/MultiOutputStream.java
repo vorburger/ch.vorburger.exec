@@ -67,8 +67,8 @@ public class MultiOutputStream extends OutputStream {
                 stream.write(b);
             } catch (IOException e) {
                 if (mex == null) {
-					mex = new MultiCauseIOException();
-				}
+                    mex = new MultiCauseIOException();
+                }
                 mex.add("MultiOutputStream write(int b) delegation failed", e);
             }
         }
@@ -85,8 +85,8 @@ public class MultiOutputStream extends OutputStream {
                 stream.write(b);
             } catch (IOException e) {
                 if (mex == null) {
-					mex = new MultiCauseIOException();
-				}
+                    mex = new MultiCauseIOException();
+                }
                 mex.add("MultiOutputStream write(byte[] b) delegation failed", e);
             }
         }
@@ -103,8 +103,8 @@ public class MultiOutputStream extends OutputStream {
                 stream.write(b, off, len);
             } catch (IOException e) {
                 if (mex == null) {
-					mex = new MultiCauseIOException();
-				}
+                    mex = new MultiCauseIOException();
+                }
                 mex.add("MultiOutputStream write(byte[] b, int off, int len) delegation failed", e);
             }
         }
@@ -121,8 +121,8 @@ public class MultiOutputStream extends OutputStream {
                 stream.flush();
             } catch (IOException e) {
                 if (mex == null) {
-					mex = new MultiCauseIOException();
-				}
+                    mex = new MultiCauseIOException();
+                }
                 mex.add("MultiOutputStream flush() delegation failed", e);
             }
         }
@@ -139,8 +139,8 @@ public class MultiOutputStream extends OutputStream {
                 stream.close();
             } catch (IOException e) {
                 if (mex == null) {
-					mex = new MultiCauseIOException();
-				}
+                    mex = new MultiCauseIOException();
+                }
                 mex.add("MultiOutputStream close() delegation failed", e);
             }
         }
