@@ -36,7 +36,7 @@ public interface ManagedProcessState {
 
     int waitForExitMaxMs(long maxWaitUntilReturning) throws ManagedProcessException;
 
-    void waitForExitMaxMsOrDestroy(long maxWaitUntilDestroyTimeout)
+    ManagedProcess waitForExitMaxMsOrDestroy(long maxWaitUntilDestroyTimeout)
             throws ManagedProcessException;
 
     String getConsole();

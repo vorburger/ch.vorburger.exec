@@ -27,7 +27,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.List;
@@ -40,7 +39,6 @@ import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.ProcessDestroyer;
 import org.apache.commons.exec.PumpStreamHandler;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -152,9 +150,10 @@ public class ManagedProcess implements ManagedProcessState {
      *
      * @throws ManagedProcessException if the process could not be started
      */
-    public synchronized void start() throws ManagedProcessException {
+    public synchronized ManagedProcess start() throws ManagedProcessException {
         startPreparation();
         startExecute();
+        return this;
     }
 
     protected synchronized void startPreparation() throws ManagedProcessException {
@@ -231,7 +230,6 @@ public class ManagedProcess implements ManagedProcessState {
      * @param messageInConsole text to wait for in the STDOUT/STDERR of the external process
      * @param maxWaitUntilReturning maximum time to wait, in milliseconds, until returning, if
      *            message wasn't seen
-     * @return true if message was seen in console; false if message didn't occur and we're
      *         returning due to max. wait timeout
      * @throws ManagedProcessException for problems such as if the process already exited (without
      *             the message ever appearing in the Console)
@@ -463,7 +461,7 @@ public class ManagedProcess implements ManagedProcessState {
      * @throws ManagedProcessException see above
      */
     @Override
-    public void waitForExitMaxMsOrDestroy(long maxWaitUntilDestroyTimeout)
+    public ManagedProcess waitForExitMaxMsOrDestroy(long maxWaitUntilDestroyTimeout)
             throws ManagedProcessException {
         waitForExitMaxMs(maxWaitUntilDestroyTimeout);
         if (isAlive()) {
@@ -471,6 +469,7 @@ public class ManagedProcess implements ManagedProcessState {
                     maxWaitUntilDestroyTimeout, getProcLongName());
             destroy();
         }
+        return this;
     }
 
     protected void assertWaitForIsValid() throws ManagedProcessException {
