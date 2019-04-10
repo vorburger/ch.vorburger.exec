@@ -46,6 +46,15 @@ If you need to, you can also attach a listener to get notified when the external
 We currently internally use Apache Commons Exec by building on top, extending and wrapping it,
 but without exposing this in its API, so that theoretically in the future this implementation detail could be changed.
 
+Advantages
+---
+
+* automatically logs external process's STDOUT and STDERR using SLF4j out of the box (can be customized)
+* automatically logs and throws for common errors (e.g. executable not found), instead of silently ignoring like j.l.Process
+* automatically destroys external process with JVM shutdown hook (can be disabled)
+* lets you await appearance of certain messages on the console
+* lets you write tests against the expected output
+
 History
 ---
 
