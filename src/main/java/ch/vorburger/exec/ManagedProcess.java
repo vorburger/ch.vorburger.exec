@@ -81,6 +81,7 @@ public class ManagedProcess implements ManagedProcessState {
     private boolean isAlive = false;
     private String procShortName;
     private RollingLogOutputStream console;
+    private boolean destroyed = false;
 
     /**
      * Package local constructor.
@@ -336,7 +337,6 @@ public class ManagedProcess implements ManagedProcessState {
         }
 
         watchDog.destroyProcess();
-
         try {
             // Safer to waitFor() after destroy()
             resultHandler.waitFor();
@@ -349,6 +349,7 @@ public class ManagedProcess implements ManagedProcessState {
         }
 
         isAlive = false;
+        destroyed = true;
     }
 
     // Java Doc shamelessly copy/pasted from java.lang.Thread#isAlive() :
@@ -518,5 +519,9 @@ public class ManagedProcess implements ManagedProcessState {
                 + commandLine.toString()
                 + (executor.getWorkingDirectory() == null ? "" : " (in working directory "
                         + executor.getWorkingDirectory().getAbsolutePath() + ")");
+    }
+
+    public boolean wasDestroyed() {
+        return destroyed;
     }
 }

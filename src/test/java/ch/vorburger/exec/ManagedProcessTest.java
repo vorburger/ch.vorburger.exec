@@ -134,6 +134,15 @@ public class ManagedProcessTest {
     }
 
     @Test
+    public void testProcessExitsGracefullyWhenFinishesBelowMaxWaitTime() throws ManagedProcessException {
+        ManagedProcess process = new ManagedProcessBuilder("sleep").addArgument(".01s").build();
+        process.start();
+        process.waitForExitMaxMsOrDestroy(50);
+        assertThat(process.isAlive(), is(false));
+        assertThat(process.wasDestroyed(), is(false));
+    }
+
+    @Test
     public void testSelfTerminatingExec() throws Exception {
         SomeSelfTerminatingExec exec = someSelfTerminatingExec();
         ManagedProcess p = exec.proc;
@@ -223,6 +232,7 @@ public class ManagedProcessTest {
         assertThat(p.isAlive(), is(true));
         p.waitForExitMaxMsOrDestroy(200);
         assertThat(p.isAlive(), is(false));
+        assertThat(p.wasDestroyed(), is(true));
         // can not: p.exitValue();
     }
 
