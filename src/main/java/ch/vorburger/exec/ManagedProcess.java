@@ -529,8 +529,4 @@ public class ManagedProcess implements ManagedProcessState {
                 + (executor.getWorkingDirectory() == null ? "" : " (in working directory "
                         + executor.getWorkingDirectory().getAbsolutePath() + ")");
     }
-
-    public boolean wasDestroyed() {
-        return destroyed;
-    }
 }
