@@ -66,6 +66,7 @@ public class ManagedProcessTest {
         assertThat(p.isAlive(), is(false));
         try {
             p.destroy();
+            assertThat(p.wasDestroyed(), is(true));
             Assert.fail("ManagedProcess.destroy() should have thrown a ManagedProcessException here");
         } catch (@SuppressWarnings("unused") ManagedProcessException e) {
             // as expected
@@ -156,10 +157,12 @@ public class ManagedProcessTest {
         p.waitForExit();
         p.exitValue(); // just making sure it works, don't check, as Win/NIX diff.
         assertThat(p.isAlive(), is(false));
+        assertThat(p.wasDestroyed(), is(false)); // process was not destroyed because it finished gracefully
 
         // It's NOT OK to call destroy() on a process which already terminated
         try {
             p.destroy();
+            assertThat(p.wasDestroyed(), is(true));
             Assert.fail("Should have thrown an ManagedProcessException");
         } catch (@SuppressWarnings("unused") ManagedProcessException e) {
             // as expected

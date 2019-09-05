@@ -366,6 +366,15 @@ public class ManagedProcess implements ManagedProcessState {
     }
 
     /**
+     * Signifies whether the ManagedProcess was destroyed ({@link ManagedProcess#destroy()}) was called on this
+     * process.
+     * @return whether this process was destroyed or not.
+     */
+    public boolean wasDestroyed() {
+        return destroyed;
+    }
+
+    /**
      * Allows <CODE>LoggingExecuteResultHandler</CODE> to notify if process has halted (success or failure)
      */
     @Override
