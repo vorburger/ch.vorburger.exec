@@ -64,6 +64,16 @@ but was it later split into a separate project. This was done to make it usable 
 (originally [to launch Ansible Networking CLI commands from OpenDaylight](https://github.com/shague/opendaylight-ansible), later [to manage etcd servers in tests](https://github.com/etcd-io/jetcd/issues/361),
 both from [OpenDaylight](http://www.opendaylight.org)).
 
+Similarly
+---
+
+From https://en.wikipedia.org/wiki/Expect#Java, note (in no particular order):
+* http://expectj.sourceforge.net
+* https://github.com/cverges/expect4j
+* https://github.com/Alexey1Gavrilov/ExpectIt
+* https://github.com/iTransformers/expect4java
+* https://github.com/ronniedong/Expect-for-Java
+
 ToDo
 ---
 
