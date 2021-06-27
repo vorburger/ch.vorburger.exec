@@ -67,7 +67,9 @@ both from [OpenDaylight](http://www.opendaylight.org)).
 Similarly
 ---
 
-From https://en.wikipedia.org/wiki/Expect#Java, note (in no particular order):
+For the _exec_ functionality, [zt-exec](https://github.com/zeroturnaround/zt-exec) (with [zt-process-killer](https://github.com/zeroturnaround/zt-process-killer)) is similar ([but refused to backlink us](https://github.com/zeroturnaround/zt-exec/pull/25)).
+
+For the _expect-like_ functionality, from https://en.wikipedia.org/wiki/Expect#Java, note (in no particular order):
 * http://expectj.sourceforge.net
 * https://github.com/cverges/expect4j
 * https://github.com/Alexey1Gavrilov/ExpectIt
