@@ -76,6 +76,22 @@ For the _expect-like_ functionality, from https://en.wikipedia.org/wiki/Expect#J
 * https://github.com/iTransformers/expect4java
 * https://github.com/ronniedong/Expect-for-Java
 
+Release
+---
+
+First test that GPG is set up correctly (`gpg: no default secret key: No secret key
+gpg: signing failed: No secret key`), and that the `settings.xml` has the credz for `oss.sonatype.org` (`status: 401 unauthorized`):
+
+    mvn verify -Pgpg
+    
+    mvn deploy
+
+Once that works, the next release can be done similarly similarly to https://github.com/vorburger/MariaDB4j#release:
+
+    mvn release:prepare
+    mvn release:perform -Pgpg
+    mvn release:clean
+
 ToDo
 ---
 
