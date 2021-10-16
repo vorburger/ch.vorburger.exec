@@ -91,6 +91,15 @@ Once that works, the next release can be done similarly similarly to https://git
     mvn release:prepare
     mvn release:perform -Pgpg
     mvn release:clean
+    git push
+
+If `mvn release:prepare` fails with the following error, then comment out `forceSignAnnotated = true` under `[tag]` in `~/.gitconfig`:
+
+    The git-tag command failed.
+    [ERROR] Command output:
+    [ERROR] error: gpg failed to sign the data
+    [ERROR] error: unable to sign the tag
+
 
 ToDo
 ---
