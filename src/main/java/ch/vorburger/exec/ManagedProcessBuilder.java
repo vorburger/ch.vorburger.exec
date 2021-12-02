@@ -26,7 +26,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.exec.util.StringUtils;
@@ -74,12 +73,12 @@ public class ManagedProcessBuilder {
 
     public ManagedProcessBuilder(String executable) throws ManagedProcessException {
         commonsExecCommandLine = new CommandLine(executable);
-        this.environment = initialEnvironment();
+        environment = initialEnvironment();
     }
 
     public ManagedProcessBuilder(File executable) throws ManagedProcessException {
         commonsExecCommandLine = new CommandLine(executable);
-        this.environment = initialEnvironment();
+        environment = initialEnvironment();
     }
 
     protected Map<String, String> initialEnvironment() throws ManagedProcessException {
@@ -138,29 +137,29 @@ public class ManagedProcessBuilder {
         // @see MariaDB4j Issue #30 why 'quoting' (https://github.com/vorburger/MariaDB4j/issues/30)
         final StringBuilder sb = new StringBuilder();
         final String arg;
-        
+
         // @see MariaDB4j Issue #501 Fix for spaces in data path doesn't work on windows
         // https://github.com/vorburger/MariaDB4j/issues/501
         // Internally Runtime.exec is being used, which says that an argument such
         // as --name="escaped value" isn't escaped, since there's no leading quote
         // and it contains a space, so it reescapes it, causing applications to split
         // it into multiple pieces, which is why we quote the whole arg (key and value) instead.
-        if("=".equals(separator)) {            
+        if ("=".equals(separator)) {
             sb.append(argPart1);
             sb.append(separator);
             sb.append(argPart2);
-            arg =StringUtils.quoteArgument(sb.toString());
+            arg = StringUtils.quoteArgument(sb.toString());
         } else {
             sb.append(StringUtils.quoteArgument(argPart1));
             sb.append(separator);
             sb.append(StringUtils.quoteArgument(argPart2));
             arg = sb.toString();
         }
-        
+
         // @see https://issues.apache.org/jira/browse/EXEC-93 why we have to use 'false' here
         // TODO Remove the false when commons-exec has a release including EXEC-93 fixed.
         addArgument(arg, false);
-        
+
         return this;
     }
 
@@ -194,7 +193,7 @@ public class ManagedProcessBuilder {
      * @see ProcessBuilder#directory()
      */
     public File getWorkingDirectory() {
-        return this.directory;
+        return directory;
     }
 
     public Map<String, String> getEnvironment() {
@@ -210,7 +209,7 @@ public class ManagedProcessBuilder {
     }
 
     public ManagedProcessBuilder setDestroyOnShutdown(boolean flag) {
-        this.destroyOnShutdown = flag;
+        destroyOnShutdown = flag;
         return this;
     }
 
@@ -245,31 +244,29 @@ public class ManagedProcessBuilder {
     }
 
     public ManagedProcessBuilder addStdOut(OutputStream stdOutput) {
-        this.stdOuts.add(stdOutput);
+        stdOuts.add(stdOutput);
         return this;
     }
 
     public ManagedProcessBuilder addStdErr(OutputStream stdError) {
-        this.stdErrs.add(stdError);
+        stdErrs.add(stdError);
         return this;
     }
 
     /* package-local... let's keep ch.vorburger.exec's API separate from Apache Commons Exec, so it
      * COULD be replaced */
     CommandLine getCommandLine() {
-        if (getWorkingDirectory() == null) {
-            if (commonsExecCommandLine.isFile()) {
-                File exec = new File(commonsExecCommandLine.getExecutable());
-                File dir = exec.getParentFile();
-                if (dir == null) {
-                    throw new IllegalStateException(
-                            "directory MUST be set (and could not be auto-determined from executable, although it was a File)");
-                }
-                this.setWorkingDirectory(dir);
-                // DO NOT } else {
-                // throw new
-                // IllegalStateException("directory MUST be set (and could not be auto-determined from executable)");
+        if ((getWorkingDirectory() == null) && commonsExecCommandLine.isFile()) {
+            File exec = new File(commonsExecCommandLine.getExecutable());
+            File dir = exec.getParentFile();
+            if (dir == null) {
+                throw new IllegalStateException(
+                        "directory MUST be set (and could not be auto-determined from executable, although it was a File)");
             }
+            setWorkingDirectory(dir);
+            // DO NOT } else {
+            // throw new
+            // IllegalStateException("directory MUST be set (and could not be auto-determined from executable)");
         }
         return commonsExecCommandLine;
     }
@@ -277,8 +274,7 @@ public class ManagedProcessBuilder {
     /**
      * Intended for debugging / logging, only.
      */
-    @Override
-    public String toString() {
+    @Override public String toString() {
         return commonsExecCommandLine.toString();
     }
 
