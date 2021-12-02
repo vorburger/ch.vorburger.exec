@@ -136,13 +136,31 @@ public class ManagedProcessBuilder {
      */
     protected ManagedProcessBuilder addArgument(String argPart1, String separator, String argPart2) {
         // @see MariaDB4j Issue #30 why 'quoting' (https://github.com/vorburger/MariaDB4j/issues/30)
-        StringBuilder sb = new StringBuilder();
-        sb.append(StringUtils.quoteArgument(argPart1));
-        sb.append(separator);
-        sb.append(StringUtils.quoteArgument(argPart2));
+        final StringBuilder sb = new StringBuilder();
+        final String arg;
+        
+        // @see MariaDB4j Issue #501 Fix for spaces in data path doesn't work on windows
+        // https://github.com/vorburger/MariaDB4j/issues/501
+        // Internally Runtime.exec is being used, which says that an argument such
+        // as --name="escaped value" isn't escaped, since there's no leading quote
+        // and it contains a space, so it reescapes it, causing applications to split
+        // it into multiple pieces, which is why we quote the whole arg (key and value) instead.
+        if("=".equals(separator)) {            
+            sb.append(argPart1);
+            sb.append(separator);
+            sb.append(argPart2);
+            arg =StringUtils.quoteArgument(sb.toString());
+        } else {
+            sb.append(StringUtils.quoteArgument(argPart1));
+            sb.append(separator);
+            sb.append(StringUtils.quoteArgument(argPart2));
+            arg = sb.toString();
+        }
+        
         // @see https://issues.apache.org/jira/browse/EXEC-93 why we have to use 'false' here
         // TODO Remove the false when commons-exec has a release including EXEC-93 fixed.
-        addArgument(sb.toString(), false);
+        addArgument(arg, false);
+        
         return this;
     }
 
