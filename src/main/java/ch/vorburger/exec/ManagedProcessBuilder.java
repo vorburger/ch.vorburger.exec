@@ -138,13 +138,13 @@ public class ManagedProcessBuilder {
         final StringBuilder sb = new StringBuilder();
         final String arg;
 
-        // @see MariaDB4j Issue #501 Fix for spaces in data path doesn't work on windows
-        // https://github.com/vorburger/MariaDB4j/issues/501
-        // Internally Runtime.exec is being used, which says that an argument such
+        // @see https://github.com/vorburger/MariaDB4j/issues/501 - Fix for spaces in data path doesn't work on windows:
+        // Internally Runtime.exec() is being used, which says that an argument such
         // as --name="escaped value" isn't escaped, since there's no leading quote
-        // and it contains a space, so it reescapes it, causing applications to split
+        // and it contains a space, so it re-escapes it, causing applications such as mysqld.exe to split
         // it into multiple pieces, which is why we quote the whole arg (key and value) instead.
-        if ("=".equals(separator)) {
+        // We do this trick only on Windows, because on Linux it breaks the behavior.
+        if ("=".equals(separator) && isWindows()) {
             sb.append(argPart1);
             sb.append(separator);
             sb.append(argPart2);
@@ -256,7 +256,7 @@ public class ManagedProcessBuilder {
     /* package-local... let's keep ch.vorburger.exec's API separate from Apache Commons Exec, so it
      * COULD be replaced */
     CommandLine getCommandLine() {
-        if ((getWorkingDirectory() == null) && commonsExecCommandLine.isFile()) {
+        if (getWorkingDirectory() == null && commonsExecCommandLine.isFile()) {
             File exec = new File(commonsExecCommandLine.getExecutable());
             File dir = exec.getParentFile();
             if (dir == null) {
@@ -278,4 +278,9 @@ public class ManagedProcessBuilder {
         return commonsExecCommandLine.toString();
     }
 
+    // inspired by org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS
+    // without security manager support; assumes System.getProperty() works
+    private boolean isWindows() {
+        return System.getProperty("os.name").startsWith("Windows");
+    }
 }
