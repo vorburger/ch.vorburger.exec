@@ -144,7 +144,7 @@ public class ManagedProcessBuilder {
         // and it contains a space, so it re-escapes it, causing applications such as mysqld.exe to split
         // it into multiple pieces, which is why we quote the whole arg (key and value) instead.
         // We do this trick only on Windows, because on Linux it breaks the behavior.
-        if ("=".equals(separator) && isWindows()) {
+        if (isWindows()) {
             sb.append(argPart1);
             sb.append(separator);
             sb.append(argPart2);
