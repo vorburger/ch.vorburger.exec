@@ -1,13 +1,11 @@
-ch.vorburger.exec
+ch.vorburger.exec [![Maven Central](https://maven-badges.herokuapp.com/maven-central/ch.vorburger.exec/exec/badge.svg)](https://maven-badges.herokuapp.com/maven-central/ch.vorburger.exec/exec)
+[![Javadocs](http://www.javadoc.io/badge/ch.vorburger.exec/exec.svg)](http://www.javadoc.io/doc/ch.vorburger.exec/exec)
 =================
 
-_If you like/use this project, a Star / Watch / Follow me on GitHub is appreciated!_
-
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/ch.vorburger.exec/exec/badge.svg)](https://maven-badges.herokuapp.com/maven-central/ch.vorburger.exec/exec)
-[![Javadocs](http://www.javadoc.io/badge/ch.vorburger.exec/exec.svg)](http://www.javadoc.io/doc/ch.vorburger.exec/exec)
-
-This project is a small library allowing to launch external processes from Java code in the background,
+This is a small library allowing to launch external processes from Java code in the background,
 and conveniently correctly pipe their output e.g. into slf4j, await either their termination or specific output, etc.
+
+_If you like/use this project, [Sponsoring me](https://github.com/sponsors/vorburger) or a Star / Watch / Follow me on GitHub is very much appreciated!_
 
 [Release Notes are in CHANGES.md](CHANGES.md).
 
