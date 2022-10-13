@@ -58,16 +58,21 @@ History
 Historically, this code was part of [MariaDB4j](https://github.com/vorburger/MariaDB4j/) (and this is why it's initial version was 3.0.0),
 but was it later split into a separate project. This was done to make it usable in separate projects
 (originally [to launch Ansible Networking CLI commands from OpenDaylight](https://github.com/shague/opendaylight-ansible), later [to manage etcd servers in tests](https://github.com/etcd-io/jetcd/issues/361),
-both from [OpenDaylight](http://www.opendaylight.org)).
+both from [OpenDaylight](http://www.opendaylight.org)); later for [vexpect](https://github.com/vorburger/vexpect),
 
-Similarly
+Similar Projects
 ---
 
 For the _exec_ functionality, [zt-exec](https://github.com/zeroturnaround/zt-exec) (with [zt-process-killer](https://github.com/zeroturnaround/zt-process-killer)) is similar ([but refused to backlink us](https://github.com/zeroturnaround/zt-exec/pull/25)).
 
-[NuProcess](https://github.com/brettwooldridge/NuProcess) is another similar library in the sams space.
+[NuProcess](https://github.com/brettwooldridge/NuProcess) is another similar library in the same space.
+
+Related Projects
+---
 
 For the _expect-like_ functionality, from https://en.wikipedia.org/wiki/Expect#Java, note (in no particular order):
+
+* https://github.com/vorburger/vexpect
 * http://expectj.sourceforge.net
 * https://github.com/cverges/expect4j
 * https://github.com/Alexey1Gavrilov/ExpectIt
