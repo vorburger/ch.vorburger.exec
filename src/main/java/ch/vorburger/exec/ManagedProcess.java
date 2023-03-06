@@ -67,7 +67,7 @@ public class ManagedProcess implements ManagedProcessState {
 
     private final CommandLine commandLine;
     private final Executor executor = new DefaultExecutor();
-    private final ExecuteWatchdog watchDog = new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT);
+    private final StopCheckExecuteWatchdog watchDog = new StopCheckExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT);
     private final ProcessDestroyer shutdownHookProcessDestroyer = new LoggingShutdownHookProcessDestroyer();
     private final Map<String, String> environment;
     private final CompositeExecuteResultHandler resultHandler;
@@ -473,7 +473,7 @@ public class ManagedProcess implements ManagedProcessState {
     }
 
     protected void assertWaitForIsValid() throws ManagedProcessException {
-        if (!isAlive() && !resultHandler.hasResult()) {
+        if (!watchDog.isStopped() && !isAlive() && !resultHandler.hasResult()) {
             throw new ManagedProcessException("Asked to waitFor " + getProcLongName()
                     + ", but it was never even start()'ed!");
         }
