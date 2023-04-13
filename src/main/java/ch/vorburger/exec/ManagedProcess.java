@@ -78,7 +78,7 @@ public class ManagedProcess implements ManagedProcessState {
     private final MultiOutputStream stdouts;
     private final MultiOutputStream stderrs;
 
-    private boolean isAlive = false;
+    private volatile boolean isAlive = false;
     private String procShortName;
     private RollingLogOutputStream console;
 
