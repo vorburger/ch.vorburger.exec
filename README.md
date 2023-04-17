@@ -85,24 +85,23 @@ Release
 First test that GPG is set up correctly (`gpg: no default secret key: No secret key
 gpg: signing failed: No secret key`), and that the `settings.xml` has the credz for `oss.sonatype.org` (`status: 401 unauthorized`):
 
-    mvn verify -Pgpg
-    
-    mvn deploy
+    ./mvnw verify -Pgpg
+
+    ./mvnw deploy
 
 Once that works, the next release can be done similarly similarly to https://github.com/vorburger/MariaDB4j#release:
 
-    mvn release:prepare
-    mvn release:perform -Pgpg
-    mvn release:clean
+    ./mvnw release:prepare
+    ./mvnw release:perform -Pgpg
+    ./mvnw release:clean
     git push
 
-If `mvn release:prepare` fails with the following error, then comment out `forceSignAnnotated = true` under `[tag]` in `~/.gitconfig`:
+If `./mvnw release:prepare` fails with the following error, then comment out `forceSignAnnotated = true` under `[tag]` in `~/.gitconfig`:
 
     The git-tag command failed.
     [ERROR] Command output:
     [ERROR] error: gpg failed to sign the data
     [ERROR] error: unable to sign the tag
-
 
 ToDo
 ---
