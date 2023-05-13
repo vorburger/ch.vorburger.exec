@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.exec.util.StringUtils;
@@ -61,6 +62,7 @@ public class ManagedProcessBuilder {
     protected ManagedProcessListener listener;
     protected List<OutputStream> stdOuts = new ArrayList<>();
     protected List<OutputStream> stdErrs = new ArrayList<>();
+    protected Function<Integer, Boolean> isSuccessExitValueChecker = exitValue -> exitValue == 0;
 
     public ManagedProcessListener getProcessListener() {
         return listener;
@@ -236,7 +238,7 @@ public class ManagedProcessBuilder {
     public ManagedProcess build() {
         return new ManagedProcess(getCommandLine(), directory, environment, inputStream, destroyOnShutdown,
                 consoleBufferMaxLines,
-                outputStreamLogDispatcher, stdOuts, stdErrs, listener);
+                outputStreamLogDispatcher, stdOuts, stdErrs, listener, isSuccessExitValueChecker);
     }
 
     public ManagedProcessBuilder setInputStream(InputStream inputStream) {
@@ -251,6 +253,11 @@ public class ManagedProcessBuilder {
 
     public ManagedProcessBuilder addStdErr(OutputStream stdError) {
         stdErrs.add(stdError);
+        return this;
+    }
+
+    public ManagedProcessBuilder setIsSuccessExitValueChecker(Function<Integer, Boolean> function) {
+        this.isSuccessExitValueChecker = function;
         return this;
     }
 
