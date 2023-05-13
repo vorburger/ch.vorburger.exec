@@ -19,10 +19,10 @@
  */
 package ch.vorburger.exec;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringEndsWith.endsWith;
 import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -70,5 +70,4 @@ public class ManagedProcessBuilderTest {
         assertTrue(arg1.contains("relative"));
         // System.out.println(arg1);
     }
-
 }
