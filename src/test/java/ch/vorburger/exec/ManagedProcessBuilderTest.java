@@ -49,31 +49,18 @@ public class ManagedProcessBuilderTest {
 
         File cwd = mbp.getWorkingDirectory();
         if (SystemUtils.IS_OS_WINDOWS) {
-            assertThat(cwd.getAbsolutePath(), endsWith("somewhere\\absolute\\bin")); // NOT
-                                                                                     // equalTo("C:\\somewhere\\absolute\\bin")
-                                                                                     // because that
-                                                                                     // makes
-                                                                                     // the Test
-                                                                                     // specific
-                                                                                     // to running
-                                                                                     // on a C:
-                                                                                     // drive, which
-                                                                                     // it
-                                                                                     // may not
+            // NOT equalTo("C:\\somewhere\\absolute\\bin") because that makes
+            // the Test specific to running on a C: drive, which it may not be.
+            assertThat(cwd.getAbsolutePath(), endsWith("somewhere\\absolute\\bin"));
         } else {
             assertThat(cwd.getAbsolutePath(), equalTo("/somewhere/absolute/bin"));
         }
 
         String arg0 = mbp.getExecutable();
         if (SystemUtils.IS_OS_WINDOWS) {
-            assertThat(arg0, endsWith("somewhere\\absolute\\bin\\thing")); // NOT
-                                                                           // equalTo("C:\\somewhere\\absolute\\bin")
-                                                                           // because that makes the
-                                                                           // Test
-                                                                           // specific to running on
-                                                                           // a C:
-                                                                           // drive, which it may
-                                                                           // not
+            // NOT equalTo("C:\\somewhere\\absolute\\bin") because that makes
+            // the Test specific to running on a C: drive, which it may not be.
+            assertThat(arg0, endsWith("somewhere\\absolute\\bin\\thing"));
         } else {
             assertThat(arg0, equalTo("/somewhere/absolute/bin/thing"));
         }

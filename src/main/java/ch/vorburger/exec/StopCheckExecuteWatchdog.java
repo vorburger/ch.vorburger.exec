@@ -17,7 +17,6 @@
  * limitations under the License.
  * #L%
  */
-
 package ch.vorburger.exec;
 
 import org.apache.commons.exec.ExecuteWatchdog;

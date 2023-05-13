@@ -20,7 +20,7 @@
 package ch.vorburger.exec;
 
 /**
- * Listener interface userss can implement to get notified about process completion/failure.
+ * Listener interface users can implement to get notified about process completion/failure.
  *
  * @author Neelesh Shastry
  */
