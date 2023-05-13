@@ -2,7 +2,7 @@
  * #%L
  * ch.vorburger.exec
  * %%
- * Copyright (C) 2012 - 2018 Michael Vorburger
+ * Copyright (C) 2012 - 2023 Michael Vorburger
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,8 @@ public class MultiOutputStream extends OutputStream {
 
     protected final List<OutputStream> streams = new LinkedList<>();
 
-    public MultiOutputStream() {}
+    public MultiOutputStream() {
+    }
 
     public MultiOutputStream(OutputStream... delegates) {
         for (OutputStream delegate : delegates) {

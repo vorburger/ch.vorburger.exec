@@ -2,7 +2,7 @@
  * #%L
  * ch.vorburger.exec
  * %%
- * Copyright (C) 2012 - 2018 Michael Vorburger
+ * Copyright (C) 2012 - 2023 Michael Vorburger
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -234,7 +234,8 @@ public class ManagedProcessBuilder {
     // ----
 
     public ManagedProcess build() {
-        return new ManagedProcess(getCommandLine(), directory, environment, inputStream, destroyOnShutdown, consoleBufferMaxLines,
+        return new ManagedProcess(getCommandLine(), directory, environment, inputStream, destroyOnShutdown,
+                consoleBufferMaxLines,
                 outputStreamLogDispatcher, stdOuts, stdErrs, listener);
     }
 
@@ -274,7 +275,8 @@ public class ManagedProcessBuilder {
     /**
      * Intended for debugging / logging, only.
      */
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return commonsExecCommandLine.toString();
     }
 

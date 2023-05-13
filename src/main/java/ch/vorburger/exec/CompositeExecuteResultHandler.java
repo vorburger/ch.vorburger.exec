@@ -2,7 +2,7 @@
  * #%L
  * ch.vorburger.exec
  * %%
- * Copyright (C) 2012 - 2018 Michael Vorburger
+ * Copyright (C) 2012 - 2023 Michael Vorburger
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,16 @@
  */
 package ch.vorburger.exec;
 
+import static java.util.Objects.requireNonNull;
+
+import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.commons.exec.DefaultExecuteResultHandler;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteResultHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.List;
-
-import static java.util.Objects.requireNonNull;
 
 class CompositeExecuteResultHandler extends DefaultExecuteResultHandler {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -37,7 +36,8 @@ class CompositeExecuteResultHandler extends DefaultExecuteResultHandler {
     private final List<? extends ExecuteResultHandler> handlers;
     private final ManagedProcessState managedProcessState;
 
-    public CompositeExecuteResultHandler(ManagedProcessState managedProcessState, List<? extends ExecuteResultHandler> handlers) {
+    public CompositeExecuteResultHandler(ManagedProcessState managedProcessState,
+            List<? extends ExecuteResultHandler> handlers) {
         super();
         this.managedProcessState = requireNonNull(managedProcessState, "managedProcessState can't be null");
         this.handlers = new ArrayList<>(handlers);
@@ -50,7 +50,7 @@ class CompositeExecuteResultHandler extends DefaultExecuteResultHandler {
             try {
                 handler.onProcessComplete(exitValue);
             } catch (Exception e) {
-                logger.error(managedProcessState.getProcLongName() + " process handler failed on processComplete",e);
+                logger.error(managedProcessState.getProcLongName() + " process handler failed on processComplete", e);
             }
         }
     }
@@ -62,7 +62,7 @@ class CompositeExecuteResultHandler extends DefaultExecuteResultHandler {
             try {
                 handler.onProcessFailed(processFailedException);
             } catch (Exception e) {
-                logger.error(managedProcessState.getProcLongName() + " process handler failed on processComplete",e);
+                logger.error(managedProcessState.getProcLongName() + " process handler failed on processComplete", e);
             }
         }
     }

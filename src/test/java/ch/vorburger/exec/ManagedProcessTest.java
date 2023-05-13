@@ -2,7 +2,7 @@
  * #%L
  * ch.vorburger.exec
  * %%
- * Copyright (C) 2012 - 2018 Michael Vorburger
+ * Copyright (C) 2012 - 2023 Michael Vorburger
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,13 @@
 package ch.vorburger.exec;
 
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.Assert;
@@ -39,8 +45,8 @@ public class ManagedProcessTest {
 
         SomeSelfTerminatingExec exec = someSelfTerminatingExec(listener);
         exec.proc.startAndWaitForConsoleMessageMaxMs(exec.msgToWaitFor, 1000);
-        assertNotEquals(Integer.MIN_VALUE,listener.successExitValue);
-        assertEquals(Integer.MIN_VALUE,listener.failureExitValue);
+        assertNotEquals(Integer.MIN_VALUE, listener.successExitValue);
+        assertEquals(Integer.MIN_VALUE, listener.failureExitValue);
         assertNull(listener.t);
     }
 
@@ -52,11 +58,11 @@ public class ManagedProcessTest {
         try {
             exec.proc.startAndWaitForConsoleMessageMaxMs(exec.msgToWaitFor, 1000);
             fail("Process expected to fail. Should've thrown a ManagedProcessException");
-        } catch(ManagedProcessException e) {
+        } catch (ManagedProcessException e) {
 
         }
-        assertEquals(Integer.MIN_VALUE,listener.successExitValue);
-        assertNotEquals(Integer.MIN_VALUE,listener.failureExitValue);
+        assertEquals(Integer.MIN_VALUE, listener.successExitValue);
+        assertNotEquals(Integer.MIN_VALUE, listener.failureExitValue);
         assertNotNull(listener.t);
     }
 
@@ -98,7 +104,8 @@ public class ManagedProcessTest {
         }
         try {
             p.waitForExitMaxMsOrDestroy(1234);
-            Assert.fail("ManagedProcess.waitForExitMaxMsOrDestroy(1234) should have thrown a ManagedProcessException here");
+            Assert.fail(
+                    "ManagedProcess.waitForExitMaxMsOrDestroy(1234) should have thrown a ManagedProcessException here");
         } catch (@SuppressWarnings("unused") ManagedProcessException e) {
             // as expected
         }
@@ -172,7 +179,8 @@ public class ManagedProcessTest {
         return someSelfTerminatingExec(null);
     }
 
-    protected SomeSelfTerminatingExec someSelfTerminatingExec(ManagedProcessListener listener) throws ManagedProcessException {
+    protected SomeSelfTerminatingExec someSelfTerminatingExec(ManagedProcessListener listener)
+            throws ManagedProcessException {
         SomeSelfTerminatingExec r = new SomeSelfTerminatingExec();
         if (SystemUtils.IS_OS_WINDOWS) {
             r.proc = new ManagedProcessBuilder("cmd.exe").addArgument("/C").addArgument("dir").addArgument("/X")
@@ -182,8 +190,10 @@ public class ManagedProcessTest {
             r.proc = new ManagedProcessBuilder("true").addArgument("--version").setProcessListener(listener).build();
             r.msgToWaitFor = "true (GNU coreutils)";
         } else if (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC) {
-            r.proc = new ManagedProcessBuilder("echo").addArgument("\"Lorem ipsum dolor sit amet, consectetur adipisci elit, "
-                    + " sed eiusmod tempor incidunt ut \nlabore et dolore magna aliqua.\"").setProcessListener(listener).build();
+            r.proc = new ManagedProcessBuilder("echo")
+                    .addArgument("\"Lorem ipsum dolor sit amet, consectetur adipisci elit, "
+                            + " sed eiusmod tempor incidunt ut \nlabore et dolore magna aliqua.\"")
+                    .setProcessListener(listener).build();
             r.msgToWaitFor = "incidunt";
         } else {
             throw new ManagedProcessException("Unexpected Platform, improve the test dude...");
@@ -192,7 +202,8 @@ public class ManagedProcessTest {
         return r;
     }
 
-    protected SomeSelfTerminatingExec someSelfTerminatingFailingExec(ManagedProcessListener listener) throws ManagedProcessException {
+    protected SomeSelfTerminatingExec someSelfTerminatingFailingExec(ManagedProcessListener listener)
+            throws ManagedProcessException {
         SomeSelfTerminatingExec r = new SomeSelfTerminatingExec();
         if (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC) {
             r.proc = new ManagedProcessBuilder("ls").addArgument("-4").setProcessListener(listener).build();
@@ -226,7 +237,7 @@ public class ManagedProcessTest {
         // can not: p.exitValue();
     }
 
-    class TestListener implements ManagedProcessListener{
+    class TestListener implements ManagedProcessListener {
         int successExitValue = Integer.MIN_VALUE;
         int failureExitValue = Integer.MIN_VALUE;
         Throwable t;

@@ -2,7 +2,7 @@
  * #%L
  * ch.vorburger.exec
  * %%
- * Copyright (C) 2012 - 2018 Michael Vorburger
+ * Copyright (C) 2012 - 2023 Michael Vorburger
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,13 @@
  */
 package ch.vorburger.exec;
 
+import static java.util.Objects.requireNonNull;
+
+import java.lang.invoke.MethodHandles;
 import org.apache.commons.exec.DefaultExecuteResultHandler;
 import org.apache.commons.exec.ExecuteException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * Extends Commons Exec's {@link DefaultExecuteResultHandler} with logging and notify state to initializing class.
