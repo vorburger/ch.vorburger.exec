@@ -32,8 +32,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.ProcessDestroyer;
@@ -67,7 +67,7 @@ public class ManagedProcess implements ManagedProcessState {
     public static final int EXITVALUE_STILL_RUNNING = Executor.INVALID_EXITVALUE - 2;
 
     private final CommandLine commandLine;
-    private final Executor executor = new DefaultExecutor();
+    private final ExtendedDefaultExecutor executor = new ExtendedDefaultExecutor();
     private final StopCheckExecuteWatchdog watchDog = new StopCheckExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT);
     private final ProcessDestroyer shutdownHookProcessDestroyer = new LoggingShutdownHookProcessDestroyer();
     private final Map<String, String> environment;
@@ -105,7 +105,8 @@ public class ManagedProcess implements ManagedProcessState {
     ManagedProcess(CommandLine commandLine, File directory, Map<String, String> environment,
             InputStream input, boolean destroyOnShutdown, int consoleBufferMaxLines,
             OutputStreamLogDispatcher outputStreamLogDispatcher,
-            List<OutputStream> stdOuts, List<OutputStream> stderr, ManagedProcessListener listener) {
+            List<OutputStream> stdOuts, List<OutputStream> stderr, ManagedProcessListener listener,
+            Function<Integer, Boolean> exitValueChecker) {
         this.commandLine = commandLine;
         this.environment = environment;
         if (input != null) {
@@ -119,6 +120,7 @@ public class ManagedProcess implements ManagedProcessState {
             executor.setWorkingDirectory(directory);
         }
         executor.setWatchdog(watchDog);
+        executor.setIsSuccessExitValueChecker(exitValueChecker);
         this.destroyOnShutdown = destroyOnShutdown;
         this.consoleBufferMaxLines = consoleBufferMaxLines;
         this.outputStreamLogDispatcher = outputStreamLogDispatcher;

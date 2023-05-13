@@ -40,28 +40,36 @@ public class ManagedProcessTest {
     @Test
     public void onProcessCompleteInvokedOnCustomListener() throws Exception {
         TestListener listener = new TestListener();
-
         SomeSelfTerminatingExec exec = someSelfTerminatingExec(listener);
         exec.proc.startAndWaitForConsoleMessageMaxMs(exec.msgToWaitFor, 1000);
-        assertNotEquals(Integer.MIN_VALUE, listener.successExitValue);
+        assertNotEquals(Integer.MIN_VALUE, listener.expectedExitValue);
         assertEquals(Integer.MIN_VALUE, listener.failureExitValue);
         assertNull(listener.t);
     }
 
     @Test
-    public void onProcessFailedInvokedOnCustomListener() throws Exception {
+    public void onProcessFailedInvokedOnCustomListenerTraditional() throws Exception {
         TestListener listener = new TestListener();
-
-        SomeSelfTerminatingExec exec = someSelfTerminatingFailingExec(listener);
+        SomeSelfTerminatingExec exec = someSelfTerminatingFailingExec(listener, false);
         try {
             exec.proc.startAndWaitForConsoleMessageMaxMs(exec.msgToWaitFor, 1000);
             fail("Process expected to fail. Should've thrown a ManagedProcessException");
         } catch (ManagedProcessException e) {
-
+            // Expected, ignore
         }
-        assertEquals(Integer.MIN_VALUE, listener.successExitValue);
+        assertEquals(Integer.MIN_VALUE, listener.expectedExitValue);
         assertNotEquals(Integer.MIN_VALUE, listener.failureExitValue);
         assertNotNull(listener.t);
+    }
+
+    @Test
+    public void onProcessFailedInvokedOnCustomListenerWithExitValueChecker() throws Exception {
+        TestListener listener = new TestListener();
+        SomeSelfTerminatingExec exec = someSelfTerminatingFailingExec(listener, true);
+        exec.proc.startAndWaitForConsoleMessageMaxMs(exec.msgToWaitFor, 1000);
+        assertEquals(2, listener.expectedExitValue);
+        assertEquals(Integer.MIN_VALUE, listener.failureExitValue);
+        assertNull(listener.t);
     }
 
     @Test
@@ -200,18 +208,26 @@ public class ManagedProcessTest {
         return r;
     }
 
-    protected SomeSelfTerminatingExec someSelfTerminatingFailingExec(ManagedProcessListener listener)
+    protected SomeSelfTerminatingExec someSelfTerminatingFailingExec(ManagedProcessListener listener,
+            boolean setExitValueChecker)
             throws ManagedProcessException {
+        ManagedProcessBuilder builder;
         SomeSelfTerminatingExec r = new SomeSelfTerminatingExec();
         if (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC) {
-            r.proc = new ManagedProcessBuilder("ls").addArgument("-4").setProcessListener(listener).build();
-            r.msgToWaitFor = "usage";
+            builder = new ManagedProcessBuilder("ls").addArgument("-4");
+            // ls (GNU coreutils) 9.1 invoked as "ls -4" prints "ls: invalid option -- '4' \n Try 'ls --help' for more information."
+            r.msgToWaitFor = "invalid option";
         } else if (SystemUtils.IS_OS_WINDOWS) {
-            r.proc = new ManagedProcessBuilder("dir").addArgument("/?").setProcessListener(listener).build();
+            builder = new ManagedProcessBuilder("dir").addArgument("/?");
             r.msgToWaitFor = "Displays a list of files and subdirectories in a directory.";
         } else {
             throw new ManagedProcessException("Unexpected Platform, improve the test dude...");
         }
+
+        if (setExitValueChecker) {
+            builder.setIsSuccessExitValueChecker(exitValue -> exitValue != null);
+        }
+        r.proc = builder.setProcessListener(listener).build();
 
         return r;
     }
@@ -236,13 +252,13 @@ public class ManagedProcessTest {
     }
 
     class TestListener implements ManagedProcessListener {
-        int successExitValue = Integer.MIN_VALUE;
+        int expectedExitValue = Integer.MIN_VALUE;
         int failureExitValue = Integer.MIN_VALUE;
         Throwable t;
 
         @Override
         public void onProcessComplete(int exitValue) {
-            successExitValue = exitValue;
+            expectedExitValue = exitValue;
         }
 
         @Override
