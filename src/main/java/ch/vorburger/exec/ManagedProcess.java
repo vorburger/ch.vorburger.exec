@@ -2,7 +2,7 @@
  * #%L
  * ch.vorburger.exec
  * %%
- * Copyright (C) 2012 - 2018 Michael Vorburger
+ * Copyright (C) 2012 - 2023 Michael Vorburger
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
@@ -102,7 +101,8 @@ public class ManagedProcess implements ManagedProcessState {
      * @param listener <CODE>ManagedProcessListener</CODE>
      */
     ManagedProcess(CommandLine commandLine, File directory, Map<String, String> environment,
-            InputStream input, boolean destroyOnShutdown, int consoleBufferMaxLines, OutputStreamLogDispatcher outputStreamLogDispatcher,
+            InputStream input, boolean destroyOnShutdown, int consoleBufferMaxLines,
+            OutputStreamLogDispatcher outputStreamLogDispatcher,
             List<OutputStream> stdOuts, List<OutputStream> stderr, ManagedProcessListener listener) {
         this.commandLine = commandLine;
         this.environment = environment;
@@ -120,7 +120,8 @@ public class ManagedProcess implements ManagedProcessState {
         this.destroyOnShutdown = destroyOnShutdown;
         this.consoleBufferMaxLines = consoleBufferMaxLines;
         this.outputStreamLogDispatcher = outputStreamLogDispatcher;
-        this.resultHandler = new CompositeExecuteResultHandler(this, Arrays.asList(new LoggingExecuteResultHandler(this), new ProcessResultHandler(listener)));
+        this.resultHandler = new CompositeExecuteResultHandler(this,
+                Arrays.asList(new LoggingExecuteResultHandler(this), new ProcessResultHandler(listener)));
         this.stdouts = new MultiOutputStream();
         this.stderrs = new MultiOutputStream();
         for (OutputStream stdOut : stdOuts) {
@@ -250,7 +251,8 @@ public class ManagedProcess implements ManagedProcessState {
         final int SLEEP_TIME_MS = 50;
         logger.info(
                 "Thread will wait for \"{}\" to appear in Console output of process {} for max. "
-                        + maxWaitUntilReturning + "ms", messageInConsole, getProcLongName());
+                        + maxWaitUntilReturning + "ms",
+                messageInConsole, getProcLongName());
 
         startExecute();
 
@@ -516,7 +518,8 @@ public class ManagedProcess implements ManagedProcessState {
     public String getProcLongName() {
         return "Program "
                 + commandLine.toString()
-                + (executor.getWorkingDirectory() == null ? "" : " (in working directory "
-                        + executor.getWorkingDirectory().getAbsolutePath() + ")");
+                + (executor.getWorkingDirectory() == null ? ""
+                        : " (in working directory "
+                                + executor.getWorkingDirectory().getAbsolutePath() + ")");
     }
 }

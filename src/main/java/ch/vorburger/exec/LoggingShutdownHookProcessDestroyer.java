@@ -2,7 +2,7 @@
  * #%L
  * ch.vorburger.exec
  * %%
- * Copyright (C) 2012 - 2018 Michael Vorburger
+ * Copyright (C) 2012 - 2023 Michael Vorburger
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,10 @@
  */
 package ch.vorburger.exec;
 
+import java.lang.invoke.MethodHandles;
 import org.apache.commons.exec.ShutdownHookProcessDestroyer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
 
 public class LoggingShutdownHookProcessDestroyer extends ShutdownHookProcessDestroyer {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

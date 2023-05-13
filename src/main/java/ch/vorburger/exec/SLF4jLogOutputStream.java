@@ -2,7 +2,7 @@
  * #%L
  * ch.vorburger.exec
  * %%
- * Copyright (C) 2012 - 2018 Michael Vorburger
+ * Copyright (C) 2012 - 2023 Michael Vorburger
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,8 @@ class SLF4jLogOutputStream extends LogOutputStream {
     private final OutputStreamType type;
     private final String pid;
 
-    protected SLF4jLogOutputStream(Logger logger, String pid, OutputStreamType type, OutputStreamLogDispatcher dispatcher) {
+    protected SLF4jLogOutputStream(Logger logger, String pid, OutputStreamType type,
+            OutputStreamLogDispatcher dispatcher) {
         this.dispatcher = dispatcher;
         this.logger = logger;
         this.type = type;
