@@ -19,12 +19,10 @@
  */
 package ch.vorburger.exec;
 
-import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -69,7 +67,7 @@ public class ManagedProcessTest {
     @Test
     public void testBasics() throws Exception {
         ManagedProcess p = new ManagedProcessBuilder("someExec").build();
-        assertThat(p.isAlive(), is(false));
+        assertEquals(false, p.isAlive());
         try {
             p.destroy();
             Assert.fail("ManagedProcess.destroy() should have thrown a ManagedProcessException here");
@@ -145,7 +143,7 @@ public class ManagedProcessTest {
         SomeSelfTerminatingExec exec = someSelfTerminatingExec();
         ManagedProcess p = exec.proc;
 
-        assertThat(p.isAlive(), is(false));
+        assertEquals(false, p.isAlive());
         p.startAndWaitForConsoleMessageMaxMs(exec.msgToWaitFor, 1000);
         // can't assertThat(p.isAlive(), is(true)); - if p finishes too fast, this fails -
         // unreliable
@@ -153,7 +151,7 @@ public class ManagedProcessTest {
 
         p.waitForExit();
         p.exitValue(); // just making sure it works, don't check, as Win/NIX diff.
-        assertThat(p.isAlive(), is(false));
+        assertEquals(false, p.isAlive());
 
         // It's NOT OK to call destroy() on a process which already terminated
         try {
@@ -229,12 +227,12 @@ public class ManagedProcessTest {
         }
 
         ManagedProcess p = pb.build();
-        assertThat(p.isAlive(), is(false));
+        assertEquals(false, p.isAlive());
         p.start();
-        assertThat(p.isAlive(), is(true));
+        assertEquals(true, p.isAlive());
         p.waitForExitMaxMsOrDestroy(200);
-        assertThat(p.isAlive(), is(false));
-        // can not: p.exitValue();
+        assertEquals(false, p.isAlive());
+        // cannot: p.exitValue();
     }
 
     class TestListener implements ManagedProcessListener {
