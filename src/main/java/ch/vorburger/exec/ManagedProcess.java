@@ -62,7 +62,9 @@ import org.slf4j.LoggerFactory;
 public class ManagedProcess implements ManagedProcessState {
 
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final int INVALID_EXITVALUE = Executor.INVALID_EXITVALUE;
+
+    private static final int EXITVALUE_DESTROYED = Executor.INVALID_EXITVALUE - 1;
+    private static final int EXITVALUE_STILL_RUNNING = Executor.INVALID_EXITVALUE - 2;
 
     private final CommandLine commandLine;
     private final Executor executor = new DefaultExecutor();
@@ -411,7 +413,7 @@ public class ManagedProcess implements ManagedProcessState {
      *
      * <p>It also throws a ManagedProcessException if {@link #start()} was never even called.
      *
-     * @return exit value (or INVALID_EXITVALUE if {@link #destroy()} was used)
+     * @return exit value (or EXITVALUE_DESTROYED if {@link #destroy()} was used)
      * @throws ManagedProcessException see above
      */
     @Override
@@ -426,8 +428,8 @@ public class ManagedProcess implements ManagedProcessState {
      * still running, taking no action).
      *
      * @param maxWaitUntilReturning Time to wait
-     * @return exit value, or INVALID_EXITVALUE if the timeout was reached, or if {@link #destroy()}
-     *         was used
+     * @return exit value, or EXITVALUE_STILL_RUNNING if the timeout was reached,
+     *         or EXITVALUE_DESTROYED if {@link #destroy()} was used
      * @throws ManagedProcessException see above
      */
     @Override
@@ -443,16 +445,32 @@ public class ManagedProcess implements ManagedProcessState {
         try {
             if (maxWaitUntilReturningInMS != -1) {
                 resultHandler.waitFor(maxWaitUntilReturningInMS);
-                checkResult();
-                if (!isAlive()) {
-                    return exitValue();
-                }
-                return INVALID_EXITVALUE;
+            } else {
+                resultHandler.waitFor();
             }
-            resultHandler.waitFor();
-            checkResult();
-            return exitValue();
 
+            // We will reach here in 4 cases:
+            //   a) OS process completed and we have an exit value
+            //   b) Commons Exec gave us an exception to propagate
+            //   c) We intentionally destroyed the process ourselves
+            //   d) process is still running (without either of above)
+            //      The latter obviously only if maxWaitUntilReturningInMS != -1,
+            //      otherwise we would still be blocking in the waitFor() above.
+
+            // This throws a ManagedProcessException if we got an ExecuteException
+            checkResult();
+
+            // This returns the exit value - iff we have one
+            Optional<Integer> exit = resultHandler.getExitValue();
+            if (exit.isPresent()) {
+                return exit.get();
+            }
+
+            if (isAlive()) {
+                return EXITVALUE_STILL_RUNNING;
+            } else {
+                return EXITVALUE_DESTROYED;
+            }
         } catch (InterruptedException e) {
             throw handleInterruptedException(e);
         }
