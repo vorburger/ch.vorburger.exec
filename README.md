@@ -58,7 +58,7 @@ History
 Historically, this code was part of [MariaDB4j](https://github.com/vorburger/MariaDB4j/) (and this is why it's initial version was 3.0.0),
 but was it later split into a separate project. This was done to make it usable in separate projects
 (originally [to launch Ansible Networking CLI commands from OpenDaylight](https://github.com/shague/opendaylight-ansible), later [to manage etcd servers in tests](https://github.com/etcd-io/jetcd/issues/361),
-both from [OpenDaylight](http://www.opendaylight.org)); later for [vexpect](https://github.com/vorburger/vexpect),
+both from [OpenDaylight](http://www.opendaylight.org)); later for use in <https://enola.dev>.
 
 Similar Projects
 ---
