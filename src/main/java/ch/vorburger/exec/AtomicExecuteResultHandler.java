@@ -67,17 +67,20 @@ public class AtomicExecuteResultHandler implements ExecuteResultHandler {
 
     @Override
     public void onProcessComplete(int exitValue) {
-        if (!holder.compareAndSet(null, new Holder(exitValue))) {
-            LOG.error("onProcessComplete({}) will throw IllegalStateException, already set: {}", exitValue, holder);
-            throw new IllegalStateException("Result already set");
+        Holder witness = holder.compareAndExchange(null, new Holder(exitValue));
+        if (witness != null) {
+            LOG.error("onProcessComplete({}) will throw IllegalStateException, already set: {}", exitValue, witness);
+            throw new IllegalStateException(
+                    "Ignoring exit value " + exitValue + " because result already set: " + witness);
         }
     }
 
     @Override
     public void onProcessFailed(ExecuteException e) {
-        if (!holder.compareAndSet(null, new Holder(e))) {
-            LOG.error("onProcessFailed({}) will throw IllegalStateException, already set: {}", e, holder);
-            throw new IllegalStateException("Result already set");
+        Holder witness = holder.compareAndExchange(null, new Holder(e));
+        if (witness != null) {
+            LOG.error("onProcessFailed({}) will throw IllegalStateException, already set: {}", e, witness);
+            throw new IllegalStateException("Ignoring Exception, because result already set: " + witness, e);
         }
     }
 
