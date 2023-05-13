@@ -22,15 +22,14 @@ package ch.vorburger.exec;
 import static java.util.Objects.requireNonNull;
 
 import java.lang.invoke.MethodHandles;
-import org.apache.commons.exec.DefaultExecuteResultHandler;
 import org.apache.commons.exec.ExecuteException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Extends Commons Exec's {@link DefaultExecuteResultHandler} with logging and notify state to initializing class.
+ * Extends our {@link AtomicExecuteResultHandler} with logging and notify state to initializing class.
  */
-public class LoggingExecuteResultHandler extends DefaultExecuteResultHandler {
+public class LoggingExecuteResultHandler extends AtomicExecuteResultHandler {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final ManagedProcessState managedProcessState;

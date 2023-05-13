@@ -19,16 +19,15 @@
  */
 package ch.vorburger.exec;
 
-import org.apache.commons.exec.DefaultExecuteResultHandler;
 import org.apache.commons.exec.ExecuteException;
 
-class ProcessResultHandler extends DefaultExecuteResultHandler {
+/**
+ * Extends {@link AtomicExecuteResultHandler} with a listener.
+ */
+class ProcessResultHandler extends AtomicExecuteResultHandler {
     private final ManagedProcessListener listener;
 
-    /**
-     * extends <CODE>DefaultExecuteResultHandler</CODE> used for asynchronous process handling.
-     */
-    public ProcessResultHandler(ManagedProcessListener listener) {
+    ProcessResultHandler(ManagedProcessListener listener) {
         if (listener == null) {
             //set internal listener
             this.listener = new ManagedProcessListenerInternal();

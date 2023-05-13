@@ -31,9 +31,9 @@ import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.ProcessDestroyer;
@@ -303,14 +303,13 @@ public class ManagedProcess implements ManagedProcessState {
     }
 
     protected void checkResult() throws ManagedProcessException {
-        if (resultHandler.hasResult()) {
+        Optional<Exception> opt = resultHandler.getException();
+        if (opt.isPresent()) {
             // We already terminated (or never started)
-            ExecuteException e = resultHandler.getException();
-            if (e != null) {
-                logger.error(getProcLongName() + " failed");
-                throw new ManagedProcessException(getProcLongName() + " failed, exitValue="
-                        + exitValue() + getLastConsoleLines(), e);
-            }
+            // Nota bene: Do NOT getExitValue() - it's either/or!
+            logger.error(getProcLongName() + " failed", opt.get());
+            throw new ManagedProcessException(getProcLongName() + " failed with Exception: " + getLastConsoleLines(),
+                    opt.get());
         }
     }
 
@@ -324,11 +323,8 @@ public class ManagedProcess implements ManagedProcessState {
      */
     @Override
     public void destroy() throws ManagedProcessException {
-        //
-        // if destroy() is ever giving any trouble, the org.openqa.selenium.os.ProcessUtils may be
-        // of
-        // interest
-        //
+        // Note: If destroy() is ever giving any trouble, the
+        // org.openqa.selenium.os.ProcessUtils may be of interest.
         if (!isAlive) {
             throw new ManagedProcessException(getProcLongName()
                     + " was already stopped (or never started)");
@@ -384,15 +380,22 @@ public class ManagedProcess implements ManagedProcessState {
      * @return the exit value of the subprocess represented by this <code>Process</code> object. by
      *         convention, the value <code>0</code> indicates normal termination.
      * @exception ManagedProcessException if the subprocess represented by this
-     *                <code>ManagedProcess</code> object has not yet terminated.
+     *                <code>ManagedProcess</code> object has not yet terminated,
+     *                or has terminated without an exit value.
      */
     @Override
     public int exitValue() throws ManagedProcessException {
-        try {
-            return resultHandler.getExitValue();
-        } catch (IllegalStateException e) {
-            throw new ManagedProcessException("Exit Value not (yet) available for "
-                    + getProcLongName(), e);
+        Optional<Integer> optExit = resultHandler.getExitValue();
+        if (optExit.isPresent()) {
+            return optExit.get();
+        } else {
+            Optional<Exception> optError = resultHandler.getException();
+            if (optError.isPresent()) {
+                throw new ManagedProcessException("No Exit Value, but an exception, is available for "
+                        + getProcLongName(), optError.get());
+            }
+            throw new ManagedProcessException("Neither Exit Value nor an Exception are available (yet) for "
+                    + getProcLongName());
         }
     }
 
@@ -434,12 +437,12 @@ public class ManagedProcess implements ManagedProcessState {
         return waitForExitMaxMsWithoutLog(maxWaitUntilReturning);
     }
 
-    protected int waitForExitMaxMsWithoutLog(long maxWaitUntilReturning)
+    protected int waitForExitMaxMsWithoutLog(long maxWaitUntilReturningInMS)
             throws ManagedProcessException {
         assertWaitForIsValid();
         try {
-            if (maxWaitUntilReturning != -1) {
-                resultHandler.waitFor(maxWaitUntilReturning);
+            if (maxWaitUntilReturningInMS != -1) {
+                resultHandler.waitFor(maxWaitUntilReturningInMS);
                 checkResult();
                 if (!isAlive()) {
                     return exitValue();
@@ -475,7 +478,7 @@ public class ManagedProcess implements ManagedProcessState {
     }
 
     protected void assertWaitForIsValid() throws ManagedProcessException {
-        if (!watchDog.isStopped() && !isAlive() && !resultHandler.hasResult()) {
+        if (!watchDog.isStopped() && !isAlive() && !resultHandler.getExitValue().isPresent()) {
             throw new ManagedProcessException("Asked to waitFor " + getProcLongName()
                     + ", but it was never even start()'ed!");
         }
