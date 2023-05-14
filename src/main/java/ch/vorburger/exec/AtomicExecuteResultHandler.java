@@ -88,7 +88,8 @@ public class AtomicExecuteResultHandler implements ExecuteResultHandler {
             if (inner instanceof ExecuteException) {
                 return Optional.of((ExecuteException) inner);
             } else {
-                return Optional.empty();
+                // This should never happen, because we only ever set ExecuteException
+                throw new IllegalStateException("BUG", inner);
             }
         }
     }

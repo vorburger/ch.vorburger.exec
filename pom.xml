@@ -49,7 +49,7 @@
         <!-- Keep these versions aligned with .github/workflows/maven.yml -->
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.compiler.release>11</maven.compiler.release>
+        <maven.compiler.release>8</maven.compiler.release>
         <error-prone.version>2.19.1</error-prone.version>
     </properties>
 
@@ -70,9 +70,7 @@
                         <arg>-XDcompilePolicy=simple</arg>
                         <arg>-Xplugin:ErrorProne -XepAllDisabledChecksAsWarnings
                             -Xep:BooleanParameter:OFF -Xep:AndroidJdkLibsChecker:OFF
-                            -Xep:Java7ApiChecker:OFF -Xep:Java8ApiChecker:OFF -Xep:Varifier:OFF</arg>
-                        <!-- TODO https://github.com/vorburger/ch.vorburger.exec/issues/117 remove
-                        Java8ApiChecker if going back to Java 8 -->
+                            -Xep:Java7ApiChecker:OFF -Xep:Varifier:OFF</arg>
                         <!-- TODO Remove Varifier when switching from 8 to Java 11 -->
                     </compilerArgs>
                     <annotationProcessorPaths>

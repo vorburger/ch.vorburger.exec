@@ -19,6 +19,9 @@
  */
 package ch.vorburger.exec;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableList;
+
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.io.File;
 import java.io.IOException;
@@ -183,7 +186,8 @@ public class ManagedProcessBuilder {
     }
 
     public List<String> getArguments() {
-        return List.of(commonsExecCommandLine.getArguments());
+        // TODO When moving to Java 11+ then replace with List.of()
+        return unmodifiableList(asList(commonsExecCommandLine.getArguments()));
     }
 
     /**
