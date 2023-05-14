@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Internal Listener that just provides debug info if ManagedProcessListener is not set externally
+ * Internal Listener that just provides debug info if ManagedProcessListener is not set externally.
  */
 class ManagedProcessListenerInternal implements ManagedProcessListener {
 

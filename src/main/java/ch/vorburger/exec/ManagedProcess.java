@@ -69,6 +69,7 @@ public class ManagedProcess implements ManagedProcessState {
 
     public static final int EXITVALUE_DESTROYED = Executor.INVALID_EXITVALUE - 1;
     public static final int EXITVALUE_STILL_RUNNING = Executor.INVALID_EXITVALUE - 2;
+    private static final int SLEEP_TIME_MS = 50;
 
     private final CommandLine commandLine;
     private final ExtendedDefaultExecutor executor = new ExtendedDefaultExecutor();
@@ -258,7 +259,6 @@ public class ManagedProcess implements ManagedProcessState {
 
         @Var
         long timeAlreadyWaited = 0;
-        int SLEEP_TIME_MS = 50;
         logger.info(
                 "Thread will wait for \"{}\" to appear in Console output of process {} for max. "
                         + maxWaitUntilReturning + "ms",
@@ -373,7 +373,7 @@ public class ManagedProcess implements ManagedProcessState {
     }
 
     /**
-     * Allows <CODE>LoggingExecuteResultHandler</CODE> to notify if process has halted (success or failure)
+     * Allows <code>LoggingExecuteResultHandler</code> to notify if process has halted (success or failure).
      */
     @Override
     public void notifyProcessHalted() {
