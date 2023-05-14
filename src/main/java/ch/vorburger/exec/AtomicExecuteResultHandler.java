@@ -19,6 +19,7 @@
  */
 package ch.vorburger.exec;
 
+import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.exec.ExecuteException;
@@ -100,9 +101,11 @@ public class AtomicExecuteResultHandler implements ExecuteResultHandler {
         }
     }
 
-    public void waitFor(long timeoutInMS) throws InterruptedException {
-        final long until = System.currentTimeMillis() + timeoutInMS;
-        while (holder.get() == null && System.currentTimeMillis() < until) {
+    public void waitFor(Duration timeout) throws InterruptedException {
+        // Nota bene: Do NOT use currentTimeMillis() but nanoTime(), see its JavaDoc
+        final long startTime = System.nanoTime();
+        final long timeoutNanos = timeout.toNanos();
+        while (holder.get() == null && System.nanoTime() - startTime < timeoutNanos) {
             Thread.sleep(SLEEP_TIME_MS);
         }
     }
