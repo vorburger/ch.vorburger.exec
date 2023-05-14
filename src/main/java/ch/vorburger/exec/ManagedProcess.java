@@ -30,8 +30,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.invoke.MethodHandles;
-import java.time.Duration;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -134,7 +132,7 @@ public class ManagedProcess implements ManagedProcessState {
         this.consoleBufferMaxLines = consoleBufferMaxLines;
         this.outputStreamLogDispatcher = outputStreamLogDispatcher;
         this.asyncResult = new CompletableFuture<>();
-        this.asyncResult.<Void>handle((result, e) ->
+        var unused = this.asyncResult.<Void>handle((result, e) ->
 	    {
             if (e == null) {
                 logger.info(this.getProcLongName() + " just exited, with value " + result);
@@ -336,7 +334,7 @@ public class ManagedProcess implements ManagedProcessState {
     protected ManagedProcessException handleException(Exception e)
             throws ManagedProcessException {
         // TODO Not sure how to best handle this... opinions welcome (see also below)
-        final String message = "Huh?! Exception should normally never happen here..."
+        String message = "Huh?! Exception should normally never happen here..."
                 + getProcLongName();
         logger.error(message, e);
         return new ManagedProcessException(message, e);
@@ -348,6 +346,8 @@ public class ManagedProcess implements ManagedProcessState {
             // We already terminated (or never started)
 	    try {
 		asyncResult.get(); // just called to throw the exception
+	    } catch (InterruptedException e) {
+		throw handleInterruptedException(e);
 	    } catch (Exception e) {
                 logger.error(getProcLongName() + " failed", e);
                 throw new ManagedProcessException(getProcLongName() + " failed with Exception: " + getLastConsoleLines(),
@@ -433,6 +433,8 @@ public class ManagedProcess implements ManagedProcessState {
     public int exitValue() throws ManagedProcessException {
         try {
             return asyncResult.get();
+        } catch (InterruptedException e) {
+            throw handleInterruptedException(e);
         } catch (Exception e) {
             throw new ManagedProcessException("No Exit Value, but an exception, is available for "
                     + getProcLongName(), e);

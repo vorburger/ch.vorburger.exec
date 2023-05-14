@@ -36,6 +36,7 @@ class CompletableFutureExecuteResultHandler implements ExecuteResultHandler {
     *
     * @param exitValue the exit value of the sub-process
     */
+    @Override
     public void onProcessComplete(int exitValue) {
 	asyncResult.complete(exitValue);
     }
@@ -45,6 +46,7 @@ class CompletableFutureExecuteResultHandler implements ExecuteResultHandler {
     *
     * @param e the {@code ExecuteException} containing the root cause
     */
+    @Override
     public void onProcessFailed(ExecuteException e) {
 	asyncResult.completeExceptionally(e);
     }
