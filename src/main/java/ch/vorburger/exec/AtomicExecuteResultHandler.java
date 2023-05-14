@@ -23,7 +23,9 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteResultHandler;
 import org.eclipse.jdt.annotation.Nullable;
@@ -40,6 +42,10 @@ import org.slf4j.LoggerFactory;
  */
 public class AtomicExecuteResultHandler implements ExecuteResultHandler {
     private static final Logger LOG = LoggerFactory.getLogger(AtomicExecuteResultHandler.class);
+
+    // When reading this code, do not confuse an
+    // org.apache.commons.exec.ExecuteException and (similarly named)
+    // an java.util.concurrent.ExecutionException
 
     private final CompletableFuture<Integer> holder = new CompletableFuture<>();
 
@@ -66,7 +72,8 @@ public class AtomicExecuteResultHandler implements ExecuteResultHandler {
     public Optional<Integer> getExitValue() {
         try {
             return Optional.ofNullable(holder.getNow(null));
-        } catch (RuntimeException e) {
+        } catch (CompletionException e) {
+            // This is thrown when there is no exit value, yet; so:
             return Optional.empty();
         }
     }
@@ -76,6 +83,7 @@ public class AtomicExecuteResultHandler implements ExecuteResultHandler {
             holder.getNow(null);
             return Optional.empty();
         } catch (CompletionException e) {
+            // This is thrown when there is no exit value, yet; so:
             Throwable inner = e.getCause();
             if (inner instanceof ExecuteException) {
                 return Optional.of((ExecuteException) inner);
@@ -91,8 +99,8 @@ public class AtomicExecuteResultHandler implements ExecuteResultHandler {
             holder.get();
         } catch (InterruptedException e) {
             throw e;
-        } catch (Exception e) {
-            // just swallow anything else
+        } catch (ExecutionException e) {
+            // see below
         }
     }
 
@@ -102,8 +110,12 @@ public class AtomicExecuteResultHandler implements ExecuteResultHandler {
             holder.get(timeoutNanos, TimeUnit.NANOSECONDS);
         } catch (InterruptedException e) {
             throw e;
-        } catch (Exception e) {
-            // just swallow anything else
+        } catch (ExecutionException | TimeoutException e) {
+            // Swallow any java.util.concurrent.ExecutionException
+            // Caused by: org.apache.commons.exec.ExecuteException
+            // (which we get here after an onProcessFailed()),
+            // or any java.util.concurrent.TimeoutException; but
+            // do NOT catch java.util.concurrent.CompletionException.
         }
     }
 }
