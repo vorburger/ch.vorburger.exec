@@ -26,6 +26,7 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteResultHandler;
+import org.eclipse.jdt.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,71 +41,68 @@ import org.slf4j.LoggerFactory;
 public class AtomicExecuteResultHandler implements ExecuteResultHandler {
     private static final Logger LOG = LoggerFactory.getLogger(AtomicExecuteResultHandler.class);
 
-    /** The interval polling the result */
-    private static final int SLEEP_TIME_MS = 50;
-
     private final CompletableFuture<Integer> holder = new CompletableFuture<>();
 
-    private void logOnAlreadySet(String methodName, ExecuteException e) {
-	String errorString = methodName + "  will throw IllegalStateException, already set: " + holder;
-	LOG.error(errorString);
-	throw new IllegalStateException(errorString, e);
+    private void logOnAlreadySet(String methodName, @Nullable ExecuteException e) {
+        String errorString = methodName + "  will throw IllegalStateException, already set: " + holder;
+        LOG.error(errorString);
+        throw new IllegalStateException(errorString, e);
     }
 
     @Override
     public void onProcessComplete(int exitValue) {
         if (!holder.complete(exitValue)) {
-	    logOnAlreadySet("onProcessComplete(" + exitValue + ")", null);
-	}
+            logOnAlreadySet("onProcessComplete(" + exitValue + ")", null);
+        }
     }
 
     @Override
     public void onProcessFailed(ExecuteException e) {
-	if (!holder.completeExceptionally(e)) {
-	    logOnAlreadySet("onProcessFailed(" + e + ")", e);
-	}
+        if (!holder.completeExceptionally(e)) {
+            logOnAlreadySet("onProcessFailed(" + e + ")", e);
+        }
     }
 
     public Optional<Integer> getExitValue() {
-	try {
-	    return Optional.ofNullable(holder.getNow(null));
-	} catch (Exception e) {
-	    return Optional.empty();
-	}
+        try {
+            return Optional.ofNullable(holder.getNow(null));
+        } catch (RuntimeException e) {
+            return Optional.empty();
+        }
     }
 
     public Optional<Exception> getException() {
-	try {
-	    holder.getNow(null);
-	    return Optional.empty();
-	} catch (CompletionException e) {
-	    Throwable inner = e.getCause();
-	    if (inner instanceof ExecuteException) {
-		return Optional.of((ExecuteException) inner);
-	    } else {
-		return Optional.empty();
-	    }
-	}
+        try {
+            holder.getNow(null);
+            return Optional.empty();
+        } catch (CompletionException e) {
+            Throwable inner = e.getCause();
+            if (inner instanceof ExecuteException) {
+                return Optional.of((ExecuteException) inner);
+            } else {
+                return Optional.empty();
+            }
+        }
     }
 
     public void waitFor() throws InterruptedException {
-	try {
-	    holder.get();
-	} catch (InterruptedException e) {
-	    throw e;
-	} catch (Exception e) {
-	    // just swallow anything else
-	}
+        try {
+            holder.get();
+        } catch (InterruptedException e) {
+            throw e;
+        } catch (Exception e) {
+            // just swallow anything else
+        }
     }
 
     public void waitFor(Duration timeout) throws InterruptedException {
-        final long timeoutNanos = timeout.toNanos();
-	try {
-	    holder.get(timeoutNanos, TimeUnit.NANOSECONDS);
-	} catch (InterruptedException e) {
-	    throw e;
-	} catch (Exception e) {
-	    // just swallow anything else
-	}
+        long timeoutNanos = timeout.toNanos();
+        try {
+            holder.get(timeoutNanos, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            throw e;
+        } catch (Exception e) {
+            // just swallow anything else
+        }
     }
 }

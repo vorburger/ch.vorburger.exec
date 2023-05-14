@@ -44,8 +44,13 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- TODO https://github.com/vorburger/ch.vorburger.exec/issues/117
+         This is currently inconsistent, we should either fully move to 11, or stick to 8... -->
+        <!-- Keep these versions aligned with .github/workflows/maven.yml -->
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.release>11</maven.compiler.release>
+        <error-prone.version>2.19.1</error-prone.version>
     </properties>
 
     <build>
@@ -57,6 +62,30 @@
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
+                    <release>${maven.compiler.release}</release>
+                    <showWarnings>true</showWarnings>
+                    <compilerArgs>
+                        <arg>-Werror</arg>
+                        <arg>-Xlint:all</arg>
+                        <arg>-XDcompilePolicy=simple</arg>
+                        <arg>-Xplugin:ErrorProne -XepAllDisabledChecksAsWarnings
+                            -Xep:BooleanParameter:OFF -Xep:AndroidJdkLibsChecker:OFF
+                            -Xep:Java7ApiChecker:OFF -Xep:Java8ApiChecker:OFF -Xep:Varifier:OFF</arg>
+                        <!-- TODO https://github.com/vorburger/ch.vorburger.exec/issues/117 remove
+                        Java8ApiChecker if going back to Java 8 -->
+                        <!-- TODO Remove Varifier when switching from 8 to Java 11 -->
+                    </compilerArgs>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>com.google.errorprone</groupId>
+                            <artifactId>error_prone_core</artifactId>
+                            <version>${error-prone.version}</version>
+                        </path>
+                        <!-- Other annotation processors go here.
+                 If 'annotationProcessorPaths' is set, processors will no longer be
+                 discovered on the regular -classpath; see also 'Using Error Prone
+                 together with other annotation processors' on https://errorprone.info/docs/installation -->
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
             <plugin>
@@ -186,6 +215,17 @@
     </distributionManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>org.eclipse.jdt</groupId>
+            <artifactId>org.eclipse.jdt.annotation</artifactId>
+            <version>2.2.700</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.errorprone</groupId>
+            <artifactId>error_prone_annotations</artifactId>
+            <version>${error-prone.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>

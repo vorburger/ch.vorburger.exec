@@ -23,11 +23,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.apache.commons.lang3.SystemUtils;
-import org.junit.Assert;
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
 
 /**
@@ -51,12 +51,9 @@ public class ManagedProcessTest {
     public void onProcessFailedInvokedOnCustomListenerTraditional() throws Exception {
         TestListener listener = new TestListener();
         SomeSelfTerminatingExec exec = someSelfTerminatingFailingExec(listener, false);
-        try {
+        assertThrows(ManagedProcessException.class, () -> {
             exec.proc.startAndWaitForConsoleMessageMaxMs(exec.msgToWaitFor, 1000);
-            fail("Process expected to fail. Should've thrown a ManagedProcessException");
-        } catch (ManagedProcessException e) {
-            // Expected, ignore
-        }
+        });
         assertEquals(Integer.MIN_VALUE, listener.expectedExitValue);
         assertNotEquals(Integer.MIN_VALUE, listener.failureExitValue);
         assertNotNull(listener.t);
@@ -73,64 +70,35 @@ public class ManagedProcessTest {
     }
 
     @Test
-    public void testBasics() throws Exception {
+    public void basics() throws Exception {
         ManagedProcess p = new ManagedProcessBuilder("someExec").build();
         assertEquals(false, p.isAlive());
-        try {
-            p.destroy();
-            Assert.fail("ManagedProcess.destroy() should have thrown a ManagedProcessException here");
-        } catch (@SuppressWarnings("unused") ManagedProcessException e) {
-            // as expected
-        }
-        try {
-            p.exitValue();
-            Assert.fail("ManagedProcess.exitValue() should have thrown a ManagedProcessException here");
-        } catch (@SuppressWarnings("unused") ManagedProcessException e) {
-            // as expected
-        }
+        assertThrows(ManagedProcessException.class, () -> p.destroy());
+        assertThrows(ManagedProcessException.class, () -> p.exitValue());
         // Commented out because this is a flaky not reliable test, because it's thread scheduling
         // timing dependent :( see long comment inside start() impl. for why this is so
-        // try {
-        // p.start();
-        // Assert.fail("ManagedProcess.start() should have thrown a ManagedProcessException here");
-        // } catch (ManagedProcessException e) {
-        // // as expected
-        // }
-        try {
-            p.waitForExit();
-            Assert.fail("ManagedProcess.waitForExit() should have thrown a ManagedProcessException here");
-        } catch (@SuppressWarnings("unused") ManagedProcessException e) {
-            // as expected
-        }
-        try {
-            p.waitForExitMaxMs(1234);
-            Assert.fail("ManagedProcess.waitForExitMaxMs(1234) should have thrown a ManagedProcessException here");
-        } catch (@SuppressWarnings("unused") ManagedProcessException e) {
-            // as expected
-        }
-        try {
-            p.waitForExitMaxMsOrDestroy(1234);
-            Assert.fail(
-                    "ManagedProcess.waitForExitMaxMsOrDestroy(1234) should have thrown a ManagedProcessException here");
-        } catch (@SuppressWarnings("unused") ManagedProcessException e) {
-            // as expected
-        }
-    }
-
-    @Test(expected = ManagedProcessException.class)
-    public void waitForMustFailIfNeverStarted() throws Exception {
-        ManagedProcess p = new ManagedProcessBuilder("someExec").build();
-        p.waitForExit();
-    }
-
-    @Test(expected = ManagedProcessException.class)
-    public void startForMustFailForWrongExecutable() throws Exception {
-        ManagedProcess p = new ManagedProcessBuilder("someExec").build();
-        p.start();
+        // assertThrows(ManagedProcessException.class, () -> {
+        //     p.start();
+        // });
+        assertThrows(ManagedProcessException.class, () -> p.waitForExit());
+        assertThrows(ManagedProcessException.class, () -> p.waitForExitMaxMs(1234));
+        assertThrows(ManagedProcessException.class, () -> p.waitForExitMaxMsOrDestroy(1234));
     }
 
     @Test
-    public void testWaitForSeenMessageIfAlreadyTerminated() throws Exception {
+    public void waitForMustFailIfNeverStarted() throws Exception {
+        ManagedProcess p = new ManagedProcessBuilder("someExec").build();
+        assertThrows(ManagedProcessException.class, () -> p.waitForExit());
+    }
+
+    @Test
+    public void startForMustFailForWrongExecutable() throws Exception {
+        ManagedProcess p = new ManagedProcessBuilder("someExec").build();
+        assertThrows(ManagedProcessException.class, () -> p.start());
+    }
+
+    @Test
+    public void waitForSeenMessageIfAlreadyTerminated() throws Exception {
         SomeSelfTerminatingExec exec = someSelfTerminatingExec();
         ManagedProcess p = exec.proc;
         // this process should have terminated itself faster than in 1s (1000ms),
@@ -138,16 +106,16 @@ public class ManagedProcessTest {
         p.startAndWaitForConsoleMessageMaxMs(exec.msgToWaitFor, 1000);
     }
 
-    @Test(expected = ManagedProcessException.class)
-    public void testWaitForWrongMessageIfAlreadyTerminated() throws Exception {
+    @Test
+    public void waitForWrongMessageIfAlreadyTerminated() throws Exception {
         ManagedProcess p = someSelfTerminatingExec().proc;
         // this process should have terminated itself faster than in 1s (1000ms),
         // but this should not cause this to hang, but must throw an ManagedProcessException
-        p.startAndWaitForConsoleMessageMaxMs("some console message which will never appear", 1000);
+        assertThrows(ManagedProcessException.class, () -> p.startAndWaitForConsoleMessageMaxMs("...", 1000));
     }
 
     @Test
-    public void testSelfTerminatingExec() throws Exception {
+    public void selfTerminatingExec() throws Exception {
         SomeSelfTerminatingExec exec = someSelfTerminatingExec();
         ManagedProcess p = exec.proc;
 
@@ -162,18 +130,13 @@ public class ManagedProcessTest {
         assertEquals(false, p.isAlive());
 
         // It's NOT OK to call destroy() on a process which already terminated
-        try {
-            p.destroy();
-            Assert.fail("Should have thrown an ManagedProcessException");
-        } catch (@SuppressWarnings("unused") ManagedProcessException e) {
-            // as expected
-        }
+        assertThrows(ManagedProcessException.class, () -> p.destroy());
 
         String recentConsoleOutput = p.getConsole();
         assertTrue(recentConsoleOutput.length() > 10);
         assertTrue(recentConsoleOutput.contains("\n"));
-        System.out.println("Recent (default) 50 lines of console output:");
-        System.out.println(recentConsoleOutput);
+        // System.out.println("Recent (default) 50 lines of console output:");
+        // System.out.println(recentConsoleOutput);
     }
 
     static class SomeSelfTerminatingExec {
@@ -185,7 +148,7 @@ public class ManagedProcessTest {
         return someSelfTerminatingExec(null);
     }
 
-    protected SomeSelfTerminatingExec someSelfTerminatingExec(ManagedProcessListener listener)
+    protected SomeSelfTerminatingExec someSelfTerminatingExec(@Nullable ManagedProcessListener listener)
             throws ManagedProcessException {
         SomeSelfTerminatingExec r = new SomeSelfTerminatingExec();
         if (SystemUtils.IS_OS_WINDOWS) {
@@ -233,7 +196,7 @@ public class ManagedProcessTest {
     }
 
     @Test
-    public void testMustTerminateExec() throws Exception {
+    public void mustTerminateExec() throws Exception {
         ManagedProcessBuilder pb;
         if (SystemUtils.IS_OS_WINDOWS) {
             pb = new ManagedProcessBuilder("notepad.exe");
@@ -251,7 +214,7 @@ public class ManagedProcessTest {
         // cannot: p.exitValue();
     }
 
-    class TestListener implements ManagedProcessListener {
+    static class TestListener implements ManagedProcessListener {
         int expectedExitValue = Integer.MIN_VALUE;
         int failureExitValue = Integer.MIN_VALUE;
         Throwable t;
