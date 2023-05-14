@@ -19,6 +19,7 @@
  */
 package ch.vorburger.exec;
 
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -68,6 +69,7 @@ public class ManagedProcessBuilder {
         return listener;
     }
 
+    @CanIgnoreReturnValue
     public ManagedProcessBuilder setProcessListener(ManagedProcessListener listener) {
         this.listener = listener;
         return this;
@@ -91,6 +93,7 @@ public class ManagedProcessBuilder {
         }
     }
 
+    @CanIgnoreReturnValue
     public ManagedProcessBuilder addArgument(String arg, boolean handleQuoting) {
         commonsExecCommandLine.addArgument(arg, handleQuoting);
         return this;
@@ -105,6 +108,7 @@ public class ManagedProcessBuilder {
      * @throws IOException if File getCanonicalPath() fails
      * @see ProcessBuilder
      */
+    @CanIgnoreReturnValue
     public ManagedProcessBuilder addArgument(File arg) throws IOException {
         addArgument(arg.getCanonicalPath(), true);
         return this;
@@ -117,6 +121,7 @@ public class ManagedProcessBuilder {
      * @return this
      * @see ProcessBuilder
      */
+    @CanIgnoreReturnValue
     public ManagedProcessBuilder addArgument(String arg) {
         addArgument(arg, true);
         return this;
@@ -126,6 +131,7 @@ public class ManagedProcessBuilder {
      * Adds a single argument to the command, composed of two parts.
      * The two parts are independently escaped (see above), and then concatenated, without separator.
      */
+    @CanIgnoreReturnValue
     public ManagedProcessBuilder addArgument(String argPart1, String argPart2) {
         addArgument(argPart1, "", argPart2); // No separator
         return this;
@@ -135,10 +141,12 @@ public class ManagedProcessBuilder {
      * Adds a single argument to the command, composed of two parts and a given separator.
      * The two parts are independently escaped (see above), and then concatenated using the separator.
      */
+    @CanIgnoreReturnValue
+    @SuppressWarnings("InconsistentOverloads") // not changing this due to preserve backwards compatibility
     protected ManagedProcessBuilder addArgument(String argPart1, String separator, String argPart2) {
         // @see MariaDB4j Issue #30 why 'quoting' (https://github.com/vorburger/MariaDB4j/issues/30)
-        final StringBuilder sb = new StringBuilder();
-        final String arg;
+        StringBuilder sb = new StringBuilder();
+        String arg;
 
         // @see https://github.com/vorburger/MariaDB4j/issues/501 - Fix for spaces in data path doesn't work on windows:
         // Internally Runtime.exec() is being used, which says that an argument such
@@ -169,12 +177,13 @@ public class ManagedProcessBuilder {
      * Adds a single argument to the command, composed of a prefix, separated by a '=', followed by a file path.
      * The prefix and file path are independently escaped (see above), and then concatenated.
      */
+    @CanIgnoreReturnValue
     public ManagedProcessBuilder addFileArgument(String arg, File file) throws IOException {
         return addArgument(arg, "=", file.getCanonicalPath());
     }
 
-    public String[] getArguments() {
-        return commonsExecCommandLine.getArguments();
+    public List<String> getArguments() {
+        return List.of(commonsExecCommandLine.getArguments());
     }
 
     /**
@@ -184,6 +193,7 @@ public class ManagedProcessBuilder {
      * @return this
      * @see ProcessBuilder#directory(File)
      */
+    @CanIgnoreReturnValue
     public ManagedProcessBuilder setWorkingDirectory(File directory) {
         this.directory = directory;
         return this;
@@ -210,11 +220,13 @@ public class ManagedProcessBuilder {
         return destroyOnShutdown;
     }
 
+    @CanIgnoreReturnValue
     public ManagedProcessBuilder setDestroyOnShutdown(boolean flag) {
         destroyOnShutdown = flag;
         return this;
     }
 
+    @CanIgnoreReturnValue
     public ManagedProcessBuilder setConsoleBufferMaxLines(int consoleBufferMaxLines) {
         this.consoleBufferMaxLines = consoleBufferMaxLines;
         return this;
@@ -224,6 +236,7 @@ public class ManagedProcessBuilder {
         return consoleBufferMaxLines;
     }
 
+    @CanIgnoreReturnValue
     public ManagedProcessBuilder setOutputStreamLogDispatcher(OutputStreamLogDispatcher outputStreamLogDispatcher) {
         this.outputStreamLogDispatcher = outputStreamLogDispatcher;
         return this;
@@ -241,21 +254,25 @@ public class ManagedProcessBuilder {
                 outputStreamLogDispatcher, stdOuts, stdErrs, listener, isSuccessExitValueChecker);
     }
 
+    @CanIgnoreReturnValue
     public ManagedProcessBuilder setInputStream(InputStream inputStream) {
         this.inputStream = inputStream;
         return this;
     }
 
+    @CanIgnoreReturnValue
     public ManagedProcessBuilder addStdOut(OutputStream stdOutput) {
         stdOuts.add(stdOutput);
         return this;
     }
 
+    @CanIgnoreReturnValue
     public ManagedProcessBuilder addStdErr(OutputStream stdError) {
         stdErrs.add(stdError);
         return this;
     }
 
+    @CanIgnoreReturnValue
     public ManagedProcessBuilder setIsSuccessExitValueChecker(Function<Integer, Boolean> function) {
         this.isSuccessExitValueChecker = function;
         return this;
@@ -289,7 +306,7 @@ public class ManagedProcessBuilder {
 
     // inspired by org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS
     // without security manager support; assumes System.getProperty() works
-    private boolean isWindows() {
+    private static boolean isWindows() {
         return System.getProperty("os.name").startsWith("Windows");
     }
 }

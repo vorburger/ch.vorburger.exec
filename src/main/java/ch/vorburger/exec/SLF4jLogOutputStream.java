@@ -71,9 +71,6 @@ class SLF4jLogOutputStream extends LogOutputStream {
             case ERROR:
                 logger.error("{}: {}", pid, line);
                 break;
-
-            default:
-                // That's impossible, shut up Checkstyle.
         }
     }
 

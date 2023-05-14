@@ -19,9 +19,11 @@
  */
 package ch.vorburger.exec;
 
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.google.errorprone.annotations.Var;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,7 +33,7 @@ import java.util.List;
  * implementation is synchronous, so the added OutputStreams should be "fast" in order not to block
  * each other.
  *
- * <p>Exceptions thrown by added OutputStreams are handled gracefully: they at first do not prevent
+ * <p>Exceptions thrown by added OutputStreams are handled gracefully: They at first do not prevent
  * delegating to the other registered OutputStreams, but then are rethrown after we've pushed to
  * delegates (possibly containing multiple causes).
  *
@@ -39,7 +41,7 @@ import java.util.List;
  */
 public class MultiOutputStream extends OutputStream {
 
-    protected final List<OutputStream> streams = new LinkedList<>();
+    protected final List<OutputStream> streams = new ArrayList<>();
 
     public MultiOutputStream() {
     }
@@ -50,11 +52,13 @@ public class MultiOutputStream extends OutputStream {
         }
     }
 
+    @CanIgnoreReturnValue
     public synchronized MultiOutputStream addOutputStream(OutputStream delegate) {
         streams.add(delegate);
         return this;
     }
 
+    @CanIgnoreReturnValue
     public synchronized MultiOutputStream removeOutputStream(OutputStream delegate) {
         streams.remove(delegate);
         return this;
@@ -62,6 +66,7 @@ public class MultiOutputStream extends OutputStream {
 
     @Override
     public void write(int b) throws IOException {
+        @Var
         MultiCauseIOException mex = null;
         for (OutputStream stream : streams) {
             try {
@@ -80,6 +85,7 @@ public class MultiOutputStream extends OutputStream {
 
     @Override
     public void write(byte[] b) throws IOException {
+        @Var
         MultiCauseIOException mex = null;
         for (OutputStream stream : streams) {
             try {
@@ -98,6 +104,7 @@ public class MultiOutputStream extends OutputStream {
 
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
+        @Var
         MultiCauseIOException mex = null;
         for (OutputStream stream : streams) {
             try {
@@ -116,6 +123,7 @@ public class MultiOutputStream extends OutputStream {
 
     @Override
     public void flush() throws IOException {
+        @Var
         MultiCauseIOException mex = null;
         for (OutputStream stream : streams) {
             try {
@@ -134,6 +142,7 @@ public class MultiOutputStream extends OutputStream {
 
     @Override
     public void close() throws IOException {
+        @Var
         MultiCauseIOException mex = null;
         for (OutputStream stream : streams) {
             try {

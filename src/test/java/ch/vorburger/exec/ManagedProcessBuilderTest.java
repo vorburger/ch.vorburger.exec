@@ -37,7 +37,7 @@ import org.junit.Test;
 public class ManagedProcessBuilderTest {
 
     @Test
-    public void testManagedProcessBuilder() throws Exception {
+    public void managedProcessBuilder() throws Exception {
         ManagedProcessBuilder mbp = new ManagedProcessBuilder(new File(
                 "/somewhere/absolute/bin/thing"));
 
@@ -65,7 +65,7 @@ public class ManagedProcessBuilderTest {
             assertThat(arg0, equalTo("/somewhere/absolute/bin/thing"));
         }
 
-        String arg1 = mbp.getArguments()[0];
+        String arg1 = mbp.getArguments().get(0);
         assertNotSame(arg1, "relative/file");
         assertTrue(arg1.contains("relative"));
         // System.out.println(arg1);

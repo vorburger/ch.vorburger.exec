@@ -22,7 +22,7 @@ package ch.vorburger.exec;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -38,7 +38,7 @@ public class MultiCauseIOException extends IOException {
     // Doesn't something like this (or helpers for it) exist else? Couldn't find in commons-lang or
     // Spring...
 
-    protected List<IOException> causes = new LinkedList<>();
+    protected List<IOException> causes = new ArrayList<>();
 
     /**
      * Add a Cause. Must be called at least once! (Otherwise why use this.)
@@ -96,7 +96,7 @@ public class MultiCauseIOException extends IOException {
     // ---
 
     @Override
-    public Throwable getCause() {
+    public synchronized Throwable getCause() {
         throw new UnsupportedOperationException();
     }
 

@@ -48,7 +48,7 @@ class CompositeExecuteResultHandler extends AtomicExecuteResultHandler {
         for (ExecuteResultHandler handler : handlers) {
             try {
                 handler.onProcessComplete(exitValue);
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 logger.error(managedProcessState.getProcLongName() + " process handler failed on processComplete", e);
             }
         }
@@ -60,7 +60,7 @@ class CompositeExecuteResultHandler extends AtomicExecuteResultHandler {
         for (ExecuteResultHandler handler : handlers) {
             try {
                 handler.onProcessFailed(processFailedException);
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 logger.error(managedProcessState.getProcLongName() + " process handler failed on processComplete", e);
             }
         }

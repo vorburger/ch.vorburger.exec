@@ -22,6 +22,8 @@ package ch.vorburger.exec;
 import static ch.vorburger.exec.OutputStreamType.STDERR;
 import static ch.vorburger.exec.OutputStreamType.STDOUT;
 
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.google.errorprone.annotations.Var;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -39,6 +41,7 @@ import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.ProcessDestroyer;
 import org.apache.commons.exec.PumpStreamHandler;
+import org.eclipse.jdt.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,12 +76,12 @@ public class ManagedProcess implements ManagedProcessState {
     private final ProcessDestroyer shutdownHookProcessDestroyer = new LoggingShutdownHookProcessDestroyer();
     private final Map<String, String> environment;
     private final CompositeExecuteResultHandler resultHandler;
-    private final InputStream input;
+    private final @Nullable InputStream input;
     private final boolean destroyOnShutdown;
     private final int consoleBufferMaxLines;
     private final OutputStreamLogDispatcher outputStreamLogDispatcher;
-    private final MultiOutputStream stdouts;
-    private final MultiOutputStream stderrs;
+    private final MultiOutputStream stdoutOS;
+    private final MultiOutputStream stderrOS;
 
     private volatile boolean isAlive = false;
     private String procShortName;
@@ -98,15 +101,15 @@ public class ManagedProcess implements ManagedProcessState {
      * @param destroyOnShutdown Ensure we get the handler for cleanup of the started processes if the main process is
      *                          going to terminate.
      * @param consoleBufferMaxLines int of what we should keep in memory for the console
-     * @param outputStreamLogDispatcher <CODE>OutputStreamLogDispatcher</CODE>
-     * @param stdOuts StandardOut from the console <CODE>List<OutputStream></CODE>
-     * @param stderr StandardError from the console <CODE>List<OutputStream></CODE>
-     * @param listener <CODE>ManagedProcessListener</CODE>
+     * @param outputStreamLogDispatcher <tt>OutputStreamLogDispatcher</tt>
+     * @param stdOuts StandardOut from the console
+     * @param stdErrs StandardError from the console
+     * @param listener A <tt>ManagedProcessListener</tt> which is notified when process completes or fails
      */
     ManagedProcess(CommandLine commandLine, File directory, Map<String, String> environment,
             InputStream input, boolean destroyOnShutdown, int consoleBufferMaxLines,
             OutputStreamLogDispatcher outputStreamLogDispatcher,
-            List<OutputStream> stdOuts, List<OutputStream> stderr, ManagedProcessListener listener,
+            List<OutputStream> stdOuts, List<OutputStream> stdErrs, ManagedProcessListener listener,
             Function<Integer, Boolean> exitValueChecker) {
         this.commandLine = commandLine;
         this.environment = environment;
@@ -127,19 +130,19 @@ public class ManagedProcess implements ManagedProcessState {
         this.outputStreamLogDispatcher = outputStreamLogDispatcher;
         this.resultHandler = new CompositeExecuteResultHandler(this,
                 Arrays.asList(new LoggingExecuteResultHandler(this), new ProcessResultHandler(listener)));
-        this.stdouts = new MultiOutputStream();
-        this.stderrs = new MultiOutputStream();
+        this.stdoutOS = new MultiOutputStream();
+        this.stderrOS = new MultiOutputStream();
         for (OutputStream stdOut : stdOuts) {
-            stdouts.addOutputStream(stdOut);
+            stdoutOS.addOutputStream(stdOut);
         }
 
-        for (OutputStream stde : stderr) {
-            stderrs.addOutputStream(stde);
+        for (OutputStream stdErr : stdErrs) {
+            stderrOS.addOutputStream(stdErr);
         }
     }
 
     // stolen from commons-io IOUtiles (@since v2.5)
-    protected BufferedInputStream buffer(final InputStream inputStream) {
+    protected BufferedInputStream buffer(InputStream inputStream) {
         // reject null early on rather than waiting for IO operation to fail
         if (inputStream == null) { // not checked by BufferedInputStream
             throw new NullPointerException("inputStream == null");
@@ -156,6 +159,7 @@ public class ManagedProcess implements ManagedProcessState {
      *
      * @throws ManagedProcessException if the process could not be started
      */
+    @CanIgnoreReturnValue
     public synchronized ManagedProcess start() throws ManagedProcessException {
         startPreparation();
         startExecute();
@@ -172,17 +176,17 @@ public class ManagedProcess implements ManagedProcessState {
             logger.info("Starting {}", getProcLongName());
         }
 
-        PumpStreamHandler outputHandler = new PumpStreamHandler(stdouts, stderrs, input);
+        PumpStreamHandler outputHandler = new PumpStreamHandler(stdoutOS, stderrOS, input);
         executor.setStreamHandler(outputHandler);
 
         String pid = getProcShortName();
-        stdouts.addOutputStream(new SLF4jLogOutputStream(logger, pid, STDOUT, outputStreamLogDispatcher));
-        stderrs.addOutputStream(new SLF4jLogOutputStream(logger, pid, STDERR, outputStreamLogDispatcher));
+        stdoutOS.addOutputStream(new SLF4jLogOutputStream(logger, pid, STDOUT, outputStreamLogDispatcher));
+        stderrOS.addOutputStream(new SLF4jLogOutputStream(logger, pid, STDERR, outputStreamLogDispatcher));
 
         if (consoleBufferMaxLines > 0) {
             console = new RollingLogOutputStream(consoleBufferMaxLines);
-            stdouts.addOutputStream(console);
-            stderrs.addOutputStream(console);
+            stdoutOS.addOutputStream(console);
+            stderrOS.addOutputStream(console);
         }
 
         if (destroyOnShutdown) {
@@ -247,13 +251,14 @@ public class ManagedProcess implements ManagedProcessState {
 
         CheckingConsoleOutputStream checkingConsoleOutputStream = new CheckingConsoleOutputStream(
                 messageInConsole);
-        if (stdouts != null && stderrs != null) {
-            stdouts.addOutputStream(checkingConsoleOutputStream);
-            stderrs.addOutputStream(checkingConsoleOutputStream);
+        if (stdoutOS != null && stderrOS != null) {
+            stdoutOS.addOutputStream(checkingConsoleOutputStream);
+            stderrOS.addOutputStream(checkingConsoleOutputStream);
         }
 
+        @Var
         long timeAlreadyWaited = 0;
-        final int SLEEP_TIME_MS = 50;
+        int SLEEP_TIME_MS = 50;
         logger.info(
                 "Thread will wait for \"{}\" to appear in Console output of process {} for max. "
                         + maxWaitUntilReturning + "ms",
@@ -285,9 +290,9 @@ public class ManagedProcess implements ManagedProcessState {
                 return true;
             }
         } finally {
-            if (stdouts != null && stderrs != null) {
-                stdouts.removeOutputStream(checkingConsoleOutputStream);
-                stderrs.removeOutputStream(checkingConsoleOutputStream);
+            if (stdoutOS != null && stderrOS != null) {
+                stdoutOS.removeOutputStream(checkingConsoleOutputStream);
+                stderrOS.removeOutputStream(checkingConsoleOutputStream);
             }
         }
     }
@@ -301,7 +306,7 @@ public class ManagedProcess implements ManagedProcessState {
     protected ManagedProcessException handleInterruptedException(InterruptedException e)
             throws ManagedProcessException {
         // TODO Not sure how to best handle this... opinions welcome (see also below)
-        final String message = "Huh?! InterruptedException should normally never happen here..."
+        String message = "Huh?! InterruptedException should normally never happen here..."
                 + getProcLongName();
         logger.error(message, e);
         return new ManagedProcessException(message, e);
@@ -487,6 +492,7 @@ public class ManagedProcess implements ManagedProcessState {
      * @throws ManagedProcessException see above
      */
     @Override
+    @CanIgnoreReturnValue
     public ManagedProcess waitForExitMaxMsOrDestroy(long maxWaitUntilDestroyTimeout)
             throws ManagedProcessException {
         waitForExitMaxMs(maxWaitUntilDestroyTimeout);
