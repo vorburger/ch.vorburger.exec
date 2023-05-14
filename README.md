@@ -86,14 +86,14 @@ First test that GPG is set up correctly (`gpg: no default secret key: No secret 
 gpg: signing failed: No secret key`), and that the `settings.xml` [has the credz](https://github.com/vorburger/ch.vorburger.exec/issues/105)
 for `oss.sonatype.org` (`status: 401 unauthorized`):
 
-    git checkout master
+    git checkout main
     ./mvnw verify -Pgpg
 
     ./mvnw deploy
 
 Once that works, the next release can be done similarly similarly to https://github.com/vorburger/MariaDB4j#release:
 
-    git checkout master
+    git checkout main
     ./mvnw release:prepare
     ./mvnw release:perform -Pgpg
     ./mvnw release:clean
