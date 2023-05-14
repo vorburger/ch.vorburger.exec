@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.invoke.MethodHandles;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -446,7 +447,7 @@ public class ManagedProcess implements ManagedProcessState {
         assertWaitForIsValid();
         try {
             if (maxWaitUntilReturningInMS != -1) {
-                resultHandler.waitFor(maxWaitUntilReturningInMS);
+                resultHandler.waitFor(Duration.ofMillis(maxWaitUntilReturningInMS));
             } else {
                 resultHandler.waitFor();
             }
