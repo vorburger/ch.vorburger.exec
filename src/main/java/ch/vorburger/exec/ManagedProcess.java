@@ -35,9 +35,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.ProcessDestroyer;
@@ -76,7 +80,7 @@ public class ManagedProcess implements ManagedProcessState {
     private final StopCheckExecuteWatchdog watchDog = new StopCheckExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT);
     private final ProcessDestroyer shutdownHookProcessDestroyer = new LoggingShutdownHookProcessDestroyer();
     private final Map<String, String> environment;
-    private final CompositeExecuteResultHandler resultHandler;
+    private final CompletableFuture<Integer> asyncResult;
     @Nullable
     private final InputStream input;
     private final boolean destroyOnShutdown;
@@ -131,8 +135,25 @@ public class ManagedProcess implements ManagedProcessState {
         this.destroyOnShutdown = destroyOnShutdown;
         this.consoleBufferMaxLines = consoleBufferMaxLines;
         this.outputStreamLogDispatcher = outputStreamLogDispatcher;
-        this.resultHandler = new CompositeExecuteResultHandler(this,
-                Arrays.asList(new LoggingExecuteResultHandler(this), new ProcessResultHandler(listener)));
+        this.asyncResult = new CompletableFuture<>();
+        this.asyncResult.<Void>handle((result, e) ->
+	    {
+            if (e == null) {
+                logger.info(this.getProcLongName() + " just exited, with value " + result);
+                listener.onProcessComplete(result);
+            } else {
+                logger.error(this.getProcLongName() + " failed unexpectedly", e);
+                if (e instanceof ExecuteException) {
+                    ExecuteException ee = (ExecuteException) e;
+                    listener.onProcessFailed(ee.getExitValue(), ee);
+	        } // TODO handle non-ExecuteException cases gracefully
+            }
+	    if (e != null && !(e instanceof CancellationException)) {
+                this.notifyProcessHalted();
+            }
+            return null;
+	    }
+        );
         this.stdout = new MultiOutputStream();
         this.stderr = new MultiOutputStream();
         for (OutputStream stdOut : stdOuts) {
@@ -203,13 +224,13 @@ public class ManagedProcess implements ManagedProcessState {
 
     protected synchronized void startExecute() throws ManagedProcessException {
         try {
-            executor.execute(commandLine, environment, resultHandler);
+            executor.execute(commandLine, environment, new CompletableFutureExecuteResultHandler(asyncResult));
         } catch (IOException e) {
             throw new ManagedProcessException("Launch failed: " + commandLine, e);
         }
 
         // We now must give the system a say 100ms chance to run the background
-        // thread now, otherwise the resultHandler in checkResult() won't work.
+        // thread now, otherwise the asyncResult in checkResult() won't work.
         //
         // This is admittedly not ideal, but to do better would require significant
         // changes to DefaultExecutor, so that its execute() would "fail fast" and
@@ -314,14 +335,26 @@ public class ManagedProcess implements ManagedProcessState {
         return new ManagedProcessException(message, e);
     }
 
+    protected ManagedProcessException handleException(Exception e)
+            throws ManagedProcessException {
+        // TODO Not sure how to best handle this... opinions welcome (see also below)
+        final String message = "Huh?! Exception should normally never happen here..."
+                + getProcLongName();
+        logger.error(message, e);
+        return new ManagedProcessException(message, e);
+    }
+
+    // TODO we could add this as a closure on the CompletableFuture instead of checking
     protected void checkResult() throws ManagedProcessException {
-        Optional<Exception> opt = resultHandler.getException();
-        if (opt.isPresent()) {
+        if (asyncResult.isCompletedExceptionally()) {
             // We already terminated (or never started)
-            // Nota bene: Do NOT getExitValue() - it's either/or!
-            logger.error(getProcLongName() + " failed", opt.get());
-            throw new ManagedProcessException(getProcLongName() + " failed with Exception: " + getLastConsoleLines(),
-                    opt.get());
+	    try {
+		asyncResult.get(); // just called to throw the exception
+	    } catch (Exception e) {
+                logger.error(getProcLongName() + " failed", e);
+                throw new ManagedProcessException(getProcLongName() + " failed with Exception: " + getLastConsoleLines(),
+                    e);
+            }
         }
     }
 
@@ -338,8 +371,9 @@ public class ManagedProcess implements ManagedProcessState {
         // Note: If destroy() is ever giving any trouble, the
         // org.openqa.selenium.os.ProcessUtils may be of interest.
         if (!isAlive) {
+            asyncResult.cancel(false);
             throw new ManagedProcessException(getProcLongName()
-                    + " was already stopped (or never started)");
+                + " was already stopped (or never started)");
         }
         if (logger.isDebugEnabled()) {
             logger.debug("Going to destroy {}", getProcLongName());
@@ -349,9 +383,11 @@ public class ManagedProcess implements ManagedProcessState {
 
         try {
             // Safer to waitFor() after destroy()
-            resultHandler.waitFor();
+            asyncResult.get();
         } catch (InterruptedException e) {
             throw handleInterruptedException(e);
+        } catch (Exception e) {
+            throw handleException(e);
         }
 
         if (logger.isInfoEnabled()) {
@@ -370,7 +406,7 @@ public class ManagedProcess implements ManagedProcessState {
      */
     @Override
     public boolean isAlive() {
-        // NOPE: return !resultHandler.hasResult();
+        // NOPE: return !asyncResult.hasResult();
         return isAlive;
     }
 
@@ -397,17 +433,11 @@ public class ManagedProcess implements ManagedProcessState {
      */
     @Override
     public int exitValue() throws ManagedProcessException {
-        Optional<Integer> optExit = resultHandler.getExitValue();
-        if (optExit.isPresent()) {
-            return optExit.get();
-        } else {
-            Optional<Exception> optError = resultHandler.getException();
-            if (optError.isPresent()) {
-                throw new ManagedProcessException("No Exit Value, but an exception, is available for "
-                        + getProcLongName(), optError.get());
-            }
-            throw new ManagedProcessException("Neither Exit Value nor an Exception are available (yet) for "
-                    + getProcLongName());
+        try {
+            return asyncResult.get();
+        } catch (Exception e) {
+            throw new ManagedProcessException("No Exit Value, but an exception, is available for "
+                    + getProcLongName(), e);
         }
     }
 
@@ -453,10 +483,10 @@ public class ManagedProcess implements ManagedProcessState {
             throws ManagedProcessException {
         assertWaitForIsValid();
         try {
-            if (maxWaitUntilReturningInMs != -1) {
-                resultHandler.waitFor(Duration.ofMillis(maxWaitUntilReturningInMs));
+            if (maxWaitUntilReturningInMS != -1) {
+                asyncResult.get(maxWaitUntilReturningInMs, TimeUnit.MILLISECONDS);
             } else {
-                resultHandler.waitFor();
+                asyncResult.get();
             }
 
             // We will reach here in 4 cases:
@@ -471,7 +501,7 @@ public class ManagedProcess implements ManagedProcessState {
             checkResult();
 
             // This returns the exit value - iff we have one
-            Optional<Integer> exit = resultHandler.getExitValue();
+            Optional<Integer> exit = Optional.ofNullable(asyncResult.getNow(null));
             if (exit.isPresent()) {
                 return exit.get();
             }
@@ -483,6 +513,8 @@ public class ManagedProcess implements ManagedProcessState {
             }
         } catch (InterruptedException e) {
             throw handleInterruptedException(e);
+        } catch (Exception e) {
+            throw handleException(e);
         }
     }
 
@@ -507,7 +539,7 @@ public class ManagedProcess implements ManagedProcessState {
     }
 
     protected void assertWaitForIsValid() throws ManagedProcessException {
-        if (!watchDog.isStopped() && !isAlive() && !resultHandler.getExitValue().isPresent()) {
+        if (!watchDog.isStopped() && !isAlive() && !asyncResult.isDone()) {
             throw new ManagedProcessException("Asked to waitFor " + getProcLongName()
                     + ", but it was never even start()'ed!");
         }
