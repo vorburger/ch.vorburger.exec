@@ -21,7 +21,9 @@ package ch.vorburger.exec;
 
 import java.time.Duration;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteResultHandler;
 import org.slf4j.Logger;
@@ -41,72 +43,68 @@ public class AtomicExecuteResultHandler implements ExecuteResultHandler {
     /** The interval polling the result */
     private static final int SLEEP_TIME_MS = 50;
 
-    private static class Holder {
-        /** The exit value of the finished process */
-        private final Integer exitValue;
+    private final CompletableFuture<Integer> holder = new CompletableFuture<>();
 
-        /** Any offending exception */
-        private final ExecuteException exception;
-
-        Holder(int exitValue) {
-            this.exitValue = exitValue;
-            this.exception = null;
-        }
-
-        Holder(ExecuteException e) {
-            this.exception = e;
-            this.exitValue = null;
-        }
-
-        @Override
-        public String toString() {
-            return "exitValue=" + exitValue + ", exception=" + exception;
-        }
+    private void logOnAlreadySet(String methodName, ExecuteException e) {
+	String errorString = methodName + "  will throw IllegalStateException, already set: " + holder;
+	LOG.error(errorString);
+	throw new IllegalStateException(errorString, e);
     }
-
-    private final AtomicReference<Holder> holder = new AtomicReference<>();
 
     @Override
     public void onProcessComplete(int exitValue) {
-        Holder witness = holder.compareAndExchange(null, new Holder(exitValue));
-        if (witness != null) {
-            LOG.error("onProcessComplete({}) will throw IllegalStateException, already set: {}", exitValue, witness);
-            throw new IllegalStateException(
-                    "Ignoring exit value " + exitValue + " because result already set: " + witness);
-        }
+        if (!holder.complete(exitValue)) {
+	    logOnAlreadySet("onProcessComplete(" + exitValue + ")", null);
+	}
     }
 
     @Override
     public void onProcessFailed(ExecuteException e) {
-        Holder witness = holder.compareAndExchange(null, new Holder(e));
-        if (witness != null) {
-            LOG.error("onProcessFailed({}) will throw IllegalStateException, already set: {}", e, witness);
-            throw new IllegalStateException("Ignoring Exception, because result already set: " + witness, e);
-        }
+	if (!holder.completeExceptionally(e)) {
+	    logOnAlreadySet("onProcessFailed(" + e + ")", e);
+	}
     }
 
     public Optional<Integer> getExitValue() {
-        Holder current = holder.get();
-        return current != null ? Optional.ofNullable(current.exitValue) : Optional.empty();
+	try {
+	    return Optional.ofNullable(holder.getNow(null));
+	} catch (Exception e) {
+	    return Optional.empty();
+	}
     }
 
     public Optional<Exception> getException() {
-        Holder current = holder.get();
-        return current != null ? Optional.ofNullable(current.exception) : Optional.empty();
+	try {
+	    holder.getNow(null);
+	    return Optional.empty();
+	} catch (CompletionException e) {
+	    Throwable inner = e.getCause();
+	    if (inner instanceof ExecuteException) {
+		return Optional.of((ExecuteException) inner);
+	    } else {
+		return Optional.empty();
+	    }
+	}
     }
 
     public void waitFor() throws InterruptedException {
-        while (holder.get() == null) {
-            Thread.sleep(SLEEP_TIME_MS);
-        }
+	try {
+	    holder.get();
+	} catch (InterruptedException e) {
+	    throw e;
+	} catch (Exception e) {
+	    // just swallow anything else
+	}
     }
 
     public void waitFor(Duration timeout) throws InterruptedException {
-        // Nota bene: Do NOT use currentTimeMillis() but nanoTime(), see its JavaDoc
-        final long startTime = System.nanoTime();
         final long timeoutNanos = timeout.toNanos();
-        while (holder.get() == null && System.nanoTime() - startTime < timeoutNanos) {
-            Thread.sleep(SLEEP_TIME_MS);
-        }
+	try {
+	    holder.get(timeoutNanos, TimeUnit.NANOSECONDS);
+	} catch (InterruptedException e) {
+	    throw e;
+	} catch (Exception e) {
+	    // just swallow anything else
+	}
     }
 }
