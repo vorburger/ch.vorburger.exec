@@ -19,32 +19,33 @@
  */
 package ch.vorburger.exec;
 
+import java.util.concurrent.CompletableFuture;
 import org.apache.commons.exec.ExecuteException;
+import org.apache.commons.exec.ExecuteResultHandler;
 
-/**
- * Extends {@link AtomicExecuteResultHandler} with a listener.
- */
-class ProcessResultHandler extends AtomicExecuteResultHandler {
-    private final ManagedProcessListener listener;
+class CompletableFutureExecuteResultHandler implements ExecuteResultHandler {
 
-    ProcessResultHandler(ManagedProcessListener listener) {
-        if (listener == null) {
-            //set internal listener
-            this.listener = new ManagedProcessListenerInternal();
-        } else {
-            this.listener = listener;
-        }
+    private final CompletableFuture<Integer> asyncResult;
+
+    public CompletableFutureExecuteResultHandler(CompletableFuture<Integer> asyncResult) {
+        this.asyncResult = asyncResult;
     }
 
-    @Override
+    /**
+    * The asynchronous execution completed.
+    *
+    * @param exitValue the exit value of the sub-process
+    */
     public void onProcessComplete(int exitValue) {
-        super.onProcessComplete(exitValue);
-        listener.onProcessComplete(exitValue);
+	asyncResult.complete(exitValue);
     }
 
-    @Override
-    public void onProcessFailed(ExecuteException processFailedException) {
-        super.onProcessFailed(processFailedException);
-        listener.onProcessFailed(processFailedException.getExitValue(), processFailedException);
+    /**
+    * The asynchronous execution failed.
+    *
+    * @param e the {@code ExecuteException} containing the root cause
+    */
+    public void onProcessFailed(ExecuteException e) {
+	asyncResult.completeExceptionally(e);
     }
 }
