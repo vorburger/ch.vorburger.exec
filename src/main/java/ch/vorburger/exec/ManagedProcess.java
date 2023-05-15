@@ -132,8 +132,7 @@ public class ManagedProcess implements ManagedProcessState {
         this.consoleBufferMaxLines = consoleBufferMaxLines;
         this.outputStreamLogDispatcher = outputStreamLogDispatcher;
         this.asyncResult = new CompletableFuture<>();
-        var unused = this.asyncResult.<Void>handle((result, e) ->
-	    {
+        CompletableFuture<Void> unused = this.asyncResult.<Void>handle((result, e) -> {
             if (e == null) {
                 logger.info(this.getProcLongName() + " just exited, with value " + result);
                 listener.onProcessComplete(result);
@@ -142,14 +141,13 @@ public class ManagedProcess implements ManagedProcessState {
                 if (e instanceof ExecuteException) {
                     ExecuteException ee = (ExecuteException) e;
                     listener.onProcessFailed(ee.getExitValue(), ee);
-	        } // TODO handle non-ExecuteException cases gracefully
+                } // TODO handle non-ExecuteException cases gracefully
             }
-	    if (e != null && !(e instanceof CancellationException)) {
+            if (e != null && !(e instanceof CancellationException)) {
                 this.notifyProcessHalted();
             }
             return null;
-	    }
-        );
+        });
         this.stdoutOS = new MultiOutputStream();
         this.stderrOS = new MultiOutputStream();
         for (OutputStream stdOut : stdOuts) {
@@ -344,11 +342,11 @@ public class ManagedProcess implements ManagedProcessState {
     protected void checkResult() throws ManagedProcessException {
         if (asyncResult.isCompletedExceptionally()) {
             // We already terminated (or never started)
-	    try {
-		asyncResult.get(); // just called to throw the exception
-	    } catch (InterruptedException e) {
-		throw handleInterruptedException(e);
-	    } catch (Exception e) {
+            try {
+                asyncResult.get(); // just called to throw the exception
+            } catch (InterruptedException e) {
+                throw handleInterruptedException(e);
+            } catch (Exception e) {
                 logger.error(getProcLongName() + " failed", e);
                 throw new ManagedProcessException(getProcLongName() + " failed with Exception: " + getLastConsoleLines(),
                     e);

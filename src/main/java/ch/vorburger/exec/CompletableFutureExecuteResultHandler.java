@@ -38,7 +38,7 @@ class CompletableFutureExecuteResultHandler implements ExecuteResultHandler {
     */
     @Override
     public void onProcessComplete(int exitValue) {
-	asyncResult.complete(exitValue);
+        asyncResult.complete(exitValue);
     }
 
     /**
@@ -48,6 +48,6 @@ class CompletableFutureExecuteResultHandler implements ExecuteResultHandler {
     */
     @Override
     public void onProcessFailed(ExecuteException e) {
-	asyncResult.completeExceptionally(e);
+        asyncResult.completeExceptionally(e);
     }
 }
