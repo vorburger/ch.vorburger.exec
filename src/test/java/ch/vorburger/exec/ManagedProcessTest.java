@@ -26,8 +26,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.SystemUtils;
-import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
 
 /**
