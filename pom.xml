@@ -241,9 +241,10 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.eclipse.jdt</groupId>
-      <artifactId>org.eclipse.jdt.annotation</artifactId>
-      <version>2.2.700</version>
+      <!-- https://github.com/vorburger/ch.vorburger.exec/issues/133 -->
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+      <version>3.0.2</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
