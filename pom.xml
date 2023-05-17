@@ -241,9 +241,9 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.eclipse.jdt</groupId>
-      <artifactId>org.eclipse.jdt.annotation</artifactId>
-      <version>2.2.700</version>
+      <groupId>org.jspecify</groupId>
+      <artifactId>jspecify</artifactId>
+      <version>0.3.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

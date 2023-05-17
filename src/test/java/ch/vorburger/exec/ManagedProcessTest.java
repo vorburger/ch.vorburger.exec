@@ -27,7 +27,7 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.lang3.SystemUtils;
-import org.eclipse.jdt.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.junit.Test;
 
 /**
@@ -110,9 +110,11 @@ public class ManagedProcessTest {
     public void waitForWrongMessageIfAlreadyTerminated() throws Exception {
         ManagedProcess p = someSelfTerminatingExec().proc;
         // this process should have terminated itself faster than in 1s (1000ms),
-        // but this should not cause this to hang, but must throw an ManagedProcessException
+        // but this should not cause this to hang, but must throw an
+        // ManagedProcessException
         assertThrows(ManagedProcessException.class, () -> p.startAndWaitForConsoleMessageMaxMs("...", 1000));
     }
+    //
 
     @Test
     public void selfTerminatingExec() throws Exception {
@@ -121,9 +123,11 @@ public class ManagedProcessTest {
 
         assertEquals(false, p.isAlive());
         p.startAndWaitForConsoleMessageMaxMs(exec.msgToWaitFor, 1000);
-        // can't assertThat(p.isAlive(), is(true)); - if p finishes too fast, this fails -
+        // can't assertThat(p.isAlive(), is(true)); - if p finishes too fast, this fails
+        // -
         // unreliable
         // test :(
+        //
 
         p.waitForExit();
         p.exitValue(); // just making sure it works, don't check, as Win/NIX diff.
@@ -178,9 +182,11 @@ public class ManagedProcessTest {
         SomeSelfTerminatingExec r = new SomeSelfTerminatingExec();
         if (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC) {
             builder = new ManagedProcessBuilder("ls").addArgument("-4");
-            // ls (GNU coreutils) 9.1 invoked as "ls -4" prints "ls: invalid option -- '4' \n Try 'ls --help' for more information."
+            // ls (GNU coreutils) 9.1 invoked as "ls -4" prints "ls: invalid option -- '4'
+            // \n Try 'ls --help' for more information."
             r.msgToWaitFor = "invalid option";
         } else if (SystemUtils.IS_OS_WINDOWS) {
+            //
             builder = new ManagedProcessBuilder("dir").addArgument("/?");
             r.msgToWaitFor = "Displays a list of files and subdirectories in a directory.";
         } else {
