@@ -64,7 +64,11 @@ public class ManagedProcessTest {
         TestListener listener = new TestListener();
         SomeSelfTerminatingExec exec = someSelfTerminatingFailingExec(listener, true);
         exec.proc.startAndWaitForConsoleMessageMaxMs(exec.msgToWaitFor, 1000);
-        assertEquals(2, listener.expectedExitValue);
+        if (SystemUtils.IS_OS_MAC) {
+            assertEquals(1, listener.expectedExitValue);
+        } else { // assumes linux
+            assertEquals(2, listener.expectedExitValue);
+        }
         assertEquals(Integer.MIN_VALUE, listener.failureExitValue);
         assertNull(listener.t);
     }
@@ -202,7 +206,11 @@ public class ManagedProcessTest {
             pb = new ManagedProcessBuilder("notepad.exe");
         } else {
             pb = new ManagedProcessBuilder("sleep");
-            pb.addArgument("30s");
+            if (SystemUtils.IS_OS_MAC) {
+                pb.addArgument("30");
+            } else { // assume linux
+                pb.addArgument("30s");
+            }
         }
 
         ManagedProcess p = pb.build();
