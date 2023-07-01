@@ -7,3 +7,11 @@ updates:
     day: sunday
     time: "04:00"
   open-pull-requests-limit: 99
+
+- package-ecosystem: "github-actions"
+  directory: "/"
+  schedule:
+    interval: weekly
+    day: sunday
+    time: "04:00"
+  open-pull-requests-limit: 99
