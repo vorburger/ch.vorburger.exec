@@ -77,12 +77,13 @@ public class ManagedProcess implements ManagedProcessState {
     private final ProcessDestroyer shutdownHookProcessDestroyer = new LoggingShutdownHookProcessDestroyer();
     private final Map<String, String> environment;
     private final CompositeExecuteResultHandler resultHandler;
-    @Nullable private final InputStream input;
+    @Nullable
+    private final InputStream input;
     private final boolean destroyOnShutdown;
     private final int consoleBufferMaxLines;
     private final OutputStreamLogDispatcher outputStreamLogDispatcher;
-    private final MultiOutputStream stdoutOS;
-    private final MultiOutputStream stderrOS;
+    private final MultiOutputStream stdout;
+    private final MultiOutputStream stderr;
 
     private volatile boolean isAlive = false;
     private String procShortName;
@@ -131,14 +132,14 @@ public class ManagedProcess implements ManagedProcessState {
         this.outputStreamLogDispatcher = outputStreamLogDispatcher;
         this.resultHandler = new CompositeExecuteResultHandler(this,
                 Arrays.asList(new LoggingExecuteResultHandler(this), new ProcessResultHandler(listener)));
-        this.stdoutOS = new MultiOutputStream();
-        this.stderrOS = new MultiOutputStream();
+        this.stdout = new MultiOutputStream();
+        this.stderr = new MultiOutputStream();
         for (OutputStream stdOut : stdOuts) {
-            stdoutOS.addOutputStream(stdOut);
+            stdout.addOutputStream(stdOut);
         }
 
         for (OutputStream stdErr : stdErrs) {
-            stderrOS.addOutputStream(stdErr);
+            stderr.addOutputStream(stdErr);
         }
     }
 
@@ -177,17 +178,17 @@ public class ManagedProcess implements ManagedProcessState {
             logger.info("Starting {}", getProcLongName());
         }
 
-        PumpStreamHandler outputHandler = new PumpStreamHandler(stdoutOS, stderrOS, input);
+        PumpStreamHandler outputHandler = new PumpStreamHandler(stdout, stderr, input);
         executor.setStreamHandler(outputHandler);
 
         String pid = getProcShortName();
-        stdoutOS.addOutputStream(new SLF4jLogOutputStream(logger, pid, STDOUT, outputStreamLogDispatcher));
-        stderrOS.addOutputStream(new SLF4jLogOutputStream(logger, pid, STDERR, outputStreamLogDispatcher));
+        stdout.addOutputStream(new SLF4jLogOutputStream(logger, pid, STDOUT, outputStreamLogDispatcher));
+        stderr.addOutputStream(new SLF4jLogOutputStream(logger, pid, STDERR, outputStreamLogDispatcher));
 
         if (consoleBufferMaxLines > 0) {
             console = new RollingLogOutputStream(consoleBufferMaxLines);
-            stdoutOS.addOutputStream(console);
-            stderrOS.addOutputStream(console);
+            stdout.addOutputStream(console);
+            stderr.addOutputStream(console);
         }
 
         if (destroyOnShutdown) {
@@ -252,9 +253,9 @@ public class ManagedProcess implements ManagedProcessState {
 
         CheckingConsoleOutputStream checkingConsoleOutputStream = new CheckingConsoleOutputStream(
                 messageInConsole);
-        if (stdoutOS != null && stderrOS != null) {
-            stdoutOS.addOutputStream(checkingConsoleOutputStream);
-            stderrOS.addOutputStream(checkingConsoleOutputStream);
+        if (stdout != null && stderr != null) {
+            stdout.addOutputStream(checkingConsoleOutputStream);
+            stderr.addOutputStream(checkingConsoleOutputStream);
         }
 
         @Var
@@ -290,9 +291,9 @@ public class ManagedProcess implements ManagedProcessState {
                 return true;
             }
         } finally {
-            if (stdoutOS != null && stderrOS != null) {
-                stdoutOS.removeOutputStream(checkingConsoleOutputStream);
-                stderrOS.removeOutputStream(checkingConsoleOutputStream);
+            if (stdout != null && stderr != null) {
+                stdout.removeOutputStream(checkingConsoleOutputStream);
+                stderr.removeOutputStream(checkingConsoleOutputStream);
             }
         }
     }
@@ -447,12 +448,12 @@ public class ManagedProcess implements ManagedProcessState {
         return waitForExitMaxMsWithoutLog(maxWaitUntilReturning);
     }
 
-    protected int waitForExitMaxMsWithoutLog(long maxWaitUntilReturningInMS)
+    protected int waitForExitMaxMsWithoutLog(long maxWaitUntilReturningInMs)
             throws ManagedProcessException {
         assertWaitForIsValid();
         try {
-            if (maxWaitUntilReturningInMS != -1) {
-                resultHandler.waitFor(Duration.ofMillis(maxWaitUntilReturningInMS));
+            if (maxWaitUntilReturningInMs != -1) {
+                resultHandler.waitFor(Duration.ofMillis(maxWaitUntilReturningInMs));
             } else {
                 resultHandler.waitFor();
             }
