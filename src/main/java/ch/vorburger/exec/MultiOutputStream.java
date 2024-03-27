@@ -48,7 +48,7 @@ public class MultiOutputStream extends OutputStream {
 
     public MultiOutputStream(OutputStream... delegates) {
         for (OutputStream delegate : delegates) {
-            addOutputStream(delegate);
+            streams.add(delegate);
         }
     }
 
