@@ -31,6 +31,7 @@ public class StopCheckExecuteWatchdog extends ExecuteWatchdog {
      *         the timeout for the process in milliseconds. It must be
      *         greater than 0 or 'INFINITE_TIMEOUT'
      */
+    @SuppressWarnings("deprecation") // TODO https://github.com/vorburger/ch.vorburger.exec/issues/189
     public StopCheckExecuteWatchdog(long timeout) {
         super(timeout);
     }

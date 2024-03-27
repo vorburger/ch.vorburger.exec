@@ -108,6 +108,7 @@ public class ManagedProcess implements ManagedProcessState {
      * @param stdErrs StandardError from the console
      * @param listener A <tt>ManagedProcessListener</tt> which is notified when process completes or fails
      */
+    @SuppressWarnings("deprecation") // TODO https://github.com/vorburger/ch.vorburger.exec/issues/189
     ManagedProcess(CommandLine commandLine, File directory, Map<String, String> environment,
             InputStream input, boolean destroyOnShutdown, int consoleBufferMaxLines,
             OutputStreamLogDispatcher outputStreamLogDispatcher,
