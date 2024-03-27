@@ -22,6 +22,7 @@ package ch.vorburger.exec;
 import java.util.function.Function;
 import org.apache.commons.exec.DefaultExecutor;
 
+@SuppressWarnings("deprecation") // TODO https://github.com/vorburger/ch.vorburger.exec/issues/189
 class ExtendedDefaultExecutor extends DefaultExecutor {
 
     private Function<Integer, Boolean> exitValueChecker;
