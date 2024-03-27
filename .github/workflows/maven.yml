@@ -7,15 +7,31 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        java: [ '11', '17', '21' ]
+    name: Java ${{ matrix.Java }} CI
     steps:
       - uses: actions/checkout@v4
-      - name: Set up JDK 11
+      - name: Set JDK ${{ matrix.Java }}
         uses: actions/setup-java@v4
         with:
           # Keep this version aligned with pom.xml!
-          java-version: "11"
-          distribution: "temurin"
+          java-version: ${{ matrix.java }}
+          distribution: "temurin" #eclipse distribution
           cache: maven
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ matrix.Java }}-${{ hashFiles('pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-m2-${{ matrix.Java }}
+            ${{ runner.os }}-m2
       - name: Build with Maven
-        run: ./mvnw -B package --file pom.xml
+        run: mvn --batch-mode --update-snapshots package --file pom.xml
+      - run: mkdir staging && cp target/*.jar staging
+      - uses: actions/upload-artifact@v4 #provide nice artifact
+        with:
+          name: Package
+          path: staging
