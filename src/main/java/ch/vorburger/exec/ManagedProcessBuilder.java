@@ -88,7 +88,8 @@ public class ManagedProcessBuilder {
         environment = initialEnvironment();
     }
 
-    protected Map<String, String> initialEnvironment() throws ManagedProcessException {
+    // It's static due to: "possible 'this' escape before subclass is fully initialized"
+    protected static Map<String, String> initialEnvironment() throws ManagedProcessException {
         try {
             return EnvironmentUtils.getProcEnvironment();
         } catch (IOException e) {
