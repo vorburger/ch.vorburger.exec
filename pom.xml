@@ -44,10 +44,6 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <!-- TODO https://github.com/vorburger/ch.vorburger.exec/issues/117
-         This is currently inconsistent, we should either fully move to 11, or stick to 8... -->
-    <!-- Keep these versions aligned with .github/workflows/maven.yml -->
-    <maven.compiler.release>11</maven.compiler.release>
     <error-prone.version>2.23.0</error-prone.version>
   </properties>
 
@@ -58,7 +54,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.11.0</version>
         <configuration>
-          <release>${maven.compiler.release}</release>
+          <!-- Keep the Java version aligned with .github/workflows/maven.yml -->
+          <release>11</release>
           <showWarnings>true</showWarnings>
           <compilerArgs>
             <arg>-Werror</arg>
