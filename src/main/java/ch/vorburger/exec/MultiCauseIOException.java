@@ -38,7 +38,7 @@ public class MultiCauseIOException extends IOException {
     // Doesn't something like this (or helpers for it) exist else? Couldn't find in commons-lang or
     // Spring...
 
-    protected List<IOException> causes = new ArrayList<>();
+    protected ArrayList<IOException> causes = new ArrayList<>();
 
     /**
      * Add a Cause. Must be called at least once! (Otherwise why use this.)
