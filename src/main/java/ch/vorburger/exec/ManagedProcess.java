@@ -32,10 +32,11 @@ import java.io.OutputStream;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.apache.commons.exec.CommandLine;
@@ -331,15 +332,6 @@ public class ManagedProcess implements ManagedProcessState {
         return new ManagedProcessException(message, e);
     }
 
-    protected ManagedProcessException handleException(Exception e)
-            throws ManagedProcessException {
-        // TODO Not sure how to best handle this... opinions welcome (see also below)
-        String message = "Huh?! Exception should normally never happen here..."
-                + getProcLongName();
-        logger.error(message, e);
-        return new ManagedProcessException(message, e);
-    }
-
     // TODO we could add this as a closure on the CompletableFuture instead of checking
     protected void checkResult() throws ManagedProcessException {
         if (asyncResult.isCompletedExceptionally()) {
@@ -380,12 +372,12 @@ public class ManagedProcess implements ManagedProcessState {
         watchDog.destroyProcess();
 
         try {
-            // Safer to waitFor() after destroy()
+            // Safer to get() after destroy()
             asyncResult.get();
         } catch (InterruptedException e) {
             throw handleInterruptedException(e);
-        } catch (Exception e) {
-            throw handleException(e);
+        } catch (ExecutionException e) {
+          // process failed, likely because it was destroyed
         }
 
         if (logger.isInfoEnabled()) {
@@ -484,28 +476,11 @@ public class ManagedProcess implements ManagedProcessState {
         assertWaitForIsValid();
         try {
             if (maxWaitUntilReturningInMs != -1) {
-                asyncResult.get(maxWaitUntilReturningInMs, TimeUnit.MILLISECONDS);
+                return asyncResult.get(maxWaitUntilReturningInMs, TimeUnit.MILLISECONDS);
             } else {
-                asyncResult.get();
+                return asyncResult.get();
             }
-
-            // We will reach here in 4 cases:
-            //   a) OS process completed and we have an exit value
-            //   b) Commons Exec gave us an exception to propagate
-            //   c) We intentionally destroyed the process ourselves
-            //   d) process is still running (without either of above)
-            //      The latter obviously only if maxWaitUntilReturningInMs != -1,
-            //      otherwise we would still be blocking in the waitFor() above.
-
-            // This throws a ManagedProcessException if we got an ExecuteException
-            checkResult();
-
-            // This returns the exit value - iff we have one
-            Optional<Integer> exit = Optional.ofNullable(asyncResult.getNow(null));
-            if (exit.isPresent()) {
-                return exit.get();
-            }
-
+        } catch (TimeoutException e) {
             if (isAlive()) {
                 return EXITVALUE_STILL_RUNNING;
             } else {
@@ -514,7 +489,9 @@ public class ManagedProcess implements ManagedProcessState {
         } catch (InterruptedException e) {
             throw handleInterruptedException(e);
         } catch (Exception e) {
-            throw handleException(e);
+            logger.error(getProcLongName() + " failed", e);
+            throw new ManagedProcessException(getProcLongName() + " failed with Exception: "
+                + getLastConsoleLines(), e);
         }
     }
 
