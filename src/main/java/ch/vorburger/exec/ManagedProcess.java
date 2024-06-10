@@ -483,7 +483,7 @@ public class ManagedProcess implements ManagedProcessState {
             throws ManagedProcessException {
         assertWaitForIsValid();
         try {
-            if (maxWaitUntilReturningInMS != -1) {
+            if (maxWaitUntilReturningInMs != -1) {
                 asyncResult.get(maxWaitUntilReturningInMs, TimeUnit.MILLISECONDS);
             } else {
                 asyncResult.get();
@@ -494,7 +494,7 @@ public class ManagedProcess implements ManagedProcessState {
             //   b) Commons Exec gave us an exception to propagate
             //   c) We intentionally destroyed the process ourselves
             //   d) process is still running (without either of above)
-            //      The latter obviously only if maxWaitUntilReturningInMS != -1,
+            //      The latter obviously only if maxWaitUntilReturningInMs != -1,
             //      otherwise we would still be blocking in the waitFor() above.
 
             // This throws a ManagedProcessException if we got an ExecuteException
