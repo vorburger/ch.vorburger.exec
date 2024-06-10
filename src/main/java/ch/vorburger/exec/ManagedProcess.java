@@ -340,7 +340,7 @@ public class ManagedProcess implements ManagedProcessState {
                 asyncResult.get(); // just called to throw the exception
             } catch (InterruptedException e) {
                 throw handleInterruptedException(e);
-            } catch (Exception e) {
+            } catch (ExecutionException e) {
                 logger.error(getProcLongName() + " failed", e);
                 throw new ManagedProcessException(getProcLongName() + " failed with Exception: " + getLastConsoleLines(),
                     e);
