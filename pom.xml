@@ -57,11 +57,13 @@
         <version>3.13.0</version>
         <configuration>
           <!-- Keep the Java version aligned with .github/workflows/maven.yml -->
-          <release>11</release>
+          <source>8</source>
+          <target>8</target>
+          <release>8</release>
           <showWarnings>true</showWarnings>
           <compilerArgs>
             <arg>-Werror</arg>
-            <arg>-Xlint:all</arg>
+            <arg>-Xlint:all,-options</arg>
             <arg>-XDcompilePolicy=simple</arg>
             <arg>-Xplugin:ErrorProne -XepAllDisabledChecksAsWarnings
               -Xep:BooleanParameter:OFF -Xep:AndroidJdkLibsChecker:OFF
