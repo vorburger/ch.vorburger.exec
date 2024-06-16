@@ -9,6 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        # Nota Bene: Even though the project (currently) targets Java 8 API level,
+        # we cannot build it under Java 8 anymore, because Error Prone (which we use)
+        # must be run on JDK 11 or newer (but we can and are still using
+        # source/target/release 8 instead 11 in the pom.xml).
         java: [ '11', '17', '21' ]
     name: Java ${{ matrix.Java }} CI
     steps:
