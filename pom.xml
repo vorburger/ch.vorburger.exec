@@ -38,6 +38,10 @@
       <name>William Dutton</name>
       <email>will.dutt@gmail.com</email>
     </developer>
+    <developer>
+      <id>mosesn</id>
+      <name>Moses Nakamura</name>
+    </developer>
   </developers>
 
   <properties>
