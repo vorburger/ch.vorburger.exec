@@ -30,6 +30,7 @@ import java.util.List;
  *
  * @author Michael Vorburger
  */
+@SuppressWarnings("MemberName") // https://errorprone.info/bugpattern/MemberName
 public class MultiCauseIOException extends IOException {
 
     private static final long serialVersionUID = -2397961845533184622L;
