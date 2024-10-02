@@ -17,6 +17,7 @@ jobs:
     name: Java ${{ matrix.Java }} CI
     steps:
       - uses: actions/checkout@v4
+
       - name: Set JDK ${{ matrix.Java }}
         uses: actions/setup-java@v4
         with:
@@ -24,6 +25,7 @@ jobs:
           java-version: ${{ matrix.java }}
           distribution: "temurin" #eclipse distribution
           cache: maven
+
       - name: Cache Maven packages
         uses: actions/cache@v4
         with:
@@ -32,6 +34,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-m2-${{ matrix.Java }}
             ${{ runner.os }}-m2
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+
       - name: Build with Maven
         run: mvn --batch-mode --update-snapshots package --file pom.xml
-  
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
