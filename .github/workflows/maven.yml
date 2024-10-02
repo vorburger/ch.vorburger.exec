@@ -36,6 +36,7 @@ jobs:
             ${{ runner.os }}-m2
 
       - name: Initialize CodeQL
+        if: github.event_name == 'pull_request'
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
@@ -44,4 +45,5 @@ jobs:
         run: mvn --batch-mode --update-snapshots package --file pom.xml
 
       - name: Perform CodeQL Analysis
+        if: github.event_name == 'pull_request'
         uses: github/codeql-action/analyze@v3
