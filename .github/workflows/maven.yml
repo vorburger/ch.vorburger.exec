@@ -35,6 +35,11 @@ jobs:
             ${{ runner.os }}-m2-${{ matrix.Java }}
             ${{ runner.os }}-m2
 
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+
       - name: Build with Maven
         run: mvn --batch-mode --update-snapshots package --file pom.xml
 
