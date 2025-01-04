@@ -65,6 +65,7 @@
             <arg>-Werror</arg>
             <arg>-Xlint:all,-options</arg>
             <arg>-XDcompilePolicy=simple</arg>
+            <arg>--should-stop=ifError=FLOW</arg>
             <arg>-Xplugin:ErrorProne -XepAllDisabledChecksAsWarnings
               -Xep:BooleanParameter:OFF -Xep:AndroidJdkLibsChecker:OFF
               -Xep:Java7ApiChecker:OFF -Xep:Varifier:OFF</arg>
