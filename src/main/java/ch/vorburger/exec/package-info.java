@@ -29,4 +29,5 @@
  *
  * @author Michael Vorburger
  */
+@org.jspecify.annotations.NullMarked
 package ch.vorburger.exec;
