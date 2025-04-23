@@ -141,8 +141,7 @@ public class ManagedProcess implements ManagedProcessState {
                 listener.onProcessComplete(result);
             } else {
                 logger.error(this.getProcLongName() + " failed unexpectedly", e);
-                if (e instanceof ExecuteException) {
-                    ExecuteException ee = (ExecuteException) e;
+                if (e instanceof ExecuteException ee) {
                     listener.onProcessFailed(ee.getExitValue(), ee);
                 } // TODO handle non-ExecuteException cases gracefully
             }
@@ -168,7 +167,7 @@ public class ManagedProcess implements ManagedProcessState {
         if (inputStream == null) { // not checked by BufferedInputStream
             throw new NullPointerException("inputStream == null");
         }
-        return inputStream instanceof BufferedInputStream ? (BufferedInputStream) inputStream
+        return inputStream instanceof BufferedInputStream bufferedInputStream ? bufferedInputStream
                 : new BufferedInputStream(inputStream);
     }
 

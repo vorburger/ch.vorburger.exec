@@ -24,8 +24,9 @@ import org.slf4j.event.Level;
 /**
  * Dispatcher of STDOUT vs STDIN output to slf4j logger levels.
  *
- * <p>This allows to customize a ManagedProcess' default behavior
- * of sending STDOUT to INFO and STDERR to ERROR.  In particular,
+ * <p>
+ * This allows to customize a ManagedProcess' default behavior
+ * of sending STDOUT to INFO and STDERR to ERROR. In particular,
  * this can be used to tune "noisy" processes which output too
  * much stuff to STDERR which isn't really meant for an error
  * log in a Java application, by filtering based on actual
@@ -38,12 +39,10 @@ public class OutputStreamLogDispatcher {
 
     @SuppressWarnings("unused")
     public Level dispatch(OutputStreamType type, String line) {
-        switch (type) {
-            case STDOUT:
-                return Level.INFO;
-            default: // STDERR
-                return Level.ERROR;
-        }
+        return switch (type) {
+            case STDOUT -> Level.INFO;
+            default -> Level.ERROR; // STDERR
+        };
     }
 
 }

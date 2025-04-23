@@ -26,7 +26,8 @@ import org.slf4j.event.Level;
 /**
  * OutputStream which logs to SLF4j.
  *
- * <p>With many thanks to
+ * <p>
+ * With many thanks to
  * http://stackoverflow.com/questions/5499042/writing-output-error-to-log-files-using
  * -pumpstreamhandler
  *
@@ -53,25 +54,11 @@ class SLF4jLogOutputStream extends LogOutputStream {
     protected void processLine(String line, @SuppressWarnings("unused") int level) {
         Level logLevel = dispatcher.dispatch(type, line);
         switch (logLevel) {
-            case TRACE:
-                logger.trace("{}: {}", pid, line);
-                break;
-
-            case DEBUG:
-                logger.debug("{}: {}", pid, line);
-                break;
-
-            case INFO:
-                logger.info("{}: {}", pid, line);
-                break;
-
-            case WARN:
-                logger.warn("{}: {}", pid, line);
-                break;
-
-            case ERROR:
-                logger.error("{}: {}", pid, line);
-                break;
+            case TRACE -> logger.trace("{}: {}", pid, line);
+            case DEBUG -> logger.debug("{}: {}", pid, line);
+            case INFO -> logger.info("{}: {}", pid, line);
+            case WARN -> logger.warn("{}: {}", pid, line);
+            case ERROR -> logger.error("{}: {}", pid, line);
         }
     }
 
