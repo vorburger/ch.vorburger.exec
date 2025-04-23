@@ -68,7 +68,7 @@
             <arg>--should-stop=ifError=FLOW</arg>
             <arg>-Xplugin:ErrorProne -XepAllDisabledChecksAsWarnings
               -Xep:BooleanParameter:OFF -Xep:AndroidJdkLibsChecker:OFF
-              -Xep:Java7ApiChecker:OFF -Xep:Varifier:OFF</arg>
+              -Xep:Varifier:OFF</arg>
             <!-- TODO Remove Varifier when switching from 8 to Java 11 -->
           </compilerArgs>
           <annotationProcessorPaths>
