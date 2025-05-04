@@ -20,6 +20,7 @@
 package ch.vorburger.exec;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -28,6 +29,7 @@ import static org.junit.Assert.assertTrue;
 
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.SystemUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -220,6 +222,27 @@ public class ManagedProcessTest {
         p.waitForExitMaxMsOrDestroy(200);
         assertEquals(false, p.isAlive());
         // cannot: p.exitValue();
+    }
+
+    @Test
+    public void whoami() throws Exception {
+        if (SystemUtils.IS_OS_WINDOWS) {
+            return;
+        }
+        ManagedProcess p = new ManagedProcessBuilder("/usr/bin/whoami").build().start();
+        assertEquals(0, p.waitForExit());
+        assertFalse(p.getConsole().isEmpty());
+    }
+
+    @Test
+    @Ignore("See https://github.com/vorburger/ch.vorburger.exec/issues/269, and fix this test somehow...") // TODO FIXME
+    public void whoAmI() throws Exception {
+        if (SystemUtils.IS_OS_WINDOWS) {
+            return;
+        }
+        ManagedProcess p = new ManagedProcessBuilder("/usr/bin/who").addArgument("am").addArgument("i").build().start();
+        assertEquals(0, p.waitForExit());
+        assertFalse(p.getConsole().isEmpty());
     }
 
     static class TestListener implements ManagedProcessListener {
