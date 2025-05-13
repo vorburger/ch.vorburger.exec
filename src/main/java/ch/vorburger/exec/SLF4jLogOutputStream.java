@@ -53,6 +53,9 @@ class SLF4jLogOutputStream extends LogOutputStream {
     @Override
     protected void processLine(String line, @SuppressWarnings("unused") int level) {
         Level logLevel = dispatcher.dispatch(type, line);
+        if (logLevel == null) {
+            return;
+        }
         switch (logLevel) {
             case TRACE -> logger.trace("{}: {}", pid, line);
             case DEBUG -> logger.debug("{}: {}", pid, line);
