@@ -67,6 +67,8 @@ For the _exec_ functionality, [zt-exec](https://github.com/zeroturnaround/zt-exe
 
 [NuProcess](https://github.com/brettwooldridge/NuProcess) is another similar library in the same space.
 
+[`fleipold/jproc`](https://github.com/fleipold/jproc] is yet another similar library.
+
 [os-lib](https://github.com/com-lihaoyi/os-lib) is a Scala library including functionality like this.
 
 Related Projects
