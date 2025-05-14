@@ -3,7 +3,7 @@
 
   <groupId>ch.vorburger.exec</groupId>
   <artifactId>exec</artifactId>
-  <version>3.4.0-SNAPSHOT</version>
+  <version>3.3.2-SNAPSHOT</version>
 
   <name>ch.vorburger.exec</name>
   <description>Java library to launch external processes</description>
