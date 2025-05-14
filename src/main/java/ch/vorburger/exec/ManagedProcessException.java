@@ -19,12 +19,14 @@
  */
 package ch.vorburger.exec;
 
+import java.io.IOException;
+
 /**
  * Exception thrown when unexpected stuff happens in ManagedProcess.
  *
  * @author Michael Vorburger
  */
-public class ManagedProcessException extends Exception {
+public class ManagedProcessException extends IOException {
 
     private static final long serialVersionUID = -5945369742058979996L;
 
