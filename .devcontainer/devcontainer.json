@@ -1,9 +1,8 @@
 {
-  // https://hub.docker.com/r/microsoft/devcontainers-java
-  "image": "mcr.microsoft.com/devcontainers/java:17",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
   "features": {
     "ghcr.io/devcontainers/features/java:1": {
-      "version": "none",
+      "version": "17",
       "installGradle": "false",
       "installMaven": "false"
     }
