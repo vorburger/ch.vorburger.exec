@@ -267,12 +267,6 @@
       <version>1.4.0</version>
     </dependency>
     <dependency>
-      <!-- Just for its CircularFifoQueue... -->
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-collections4</artifactId>
-      <version>4.5.0</version>
-    </dependency>
-    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.13.2</version>

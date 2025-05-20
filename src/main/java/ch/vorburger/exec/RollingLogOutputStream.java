@@ -19,8 +19,6 @@
  */
 package ch.vorburger.exec;
 
-import java.util.Collection;
-import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.exec.LogOutputStream;
 
 /**
@@ -31,7 +29,7 @@ import org.apache.commons.exec.LogOutputStream;
 // intentionally package local for now
 class RollingLogOutputStream extends LogOutputStream {
 
-    private final Collection<String> ringBuffer;
+    private final CircularFifoQueue<String> ringBuffer;
 
     RollingLogOutputStream(int maxLines) {
         ringBuffer = new CircularFifoQueue<>(maxLines);
