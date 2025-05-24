@@ -25,12 +25,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import org.junit.Test;
 
 /**
  * Tests CircularFifoQueue.
@@ -81,7 +82,8 @@ public class CircularFifoQueueTest {
         assertEquals(3, queue.size());
 
         // Queue is full, iterator should have 3 elements
-        @SuppressWarnings("Var") Iterator<String> it = queue.iterator();
+        @SuppressWarnings("Var")
+        Iterator<String> it = queue.iterator();
         assertTrue(it.hasNext());
         assertEquals("one", it.next());
         assertTrue(it.hasNext());
@@ -130,7 +132,8 @@ public class CircularFifoQueueTest {
         for (Integer item : queue) {
             actual.add(item);
         }
-        assertEquals("Iterator should return elements in FIFO order (partially full)", expected, actual);
+        assertEquals(
+                "Iterator should return elements in FIFO order (partially full)", expected, actual);
 
         queue.add(4);
         expected.add(4);
@@ -151,7 +154,8 @@ public class CircularFifoQueueTest {
         for (Integer item : queue) {
             actual.add(item);
         }
-        assertEquals("Iterator should return elements in FIFO order (after rolling)", expected, actual);
+        assertEquals(
+                "Iterator should return elements in FIFO order (after rolling)", expected, actual);
     }
 
     @Test
@@ -159,7 +163,8 @@ public class CircularFifoQueueTest {
         CircularFifoQueue<String> queue = new CircularFifoQueue<>(1);
         queue.add("A");
         assertEquals(1, queue.size());
-        @SuppressWarnings("Var") Iterator<String> it = queue.iterator();
+        @SuppressWarnings("Var")
+        Iterator<String> it = queue.iterator();
         assertTrue(it.hasNext());
         assertEquals("A", it.next());
         assertFalse(it.hasNext());
@@ -195,10 +200,15 @@ public class CircularFifoQueueTest {
         assertThrows(UnsupportedOperationException.class, () -> queue.toArray());
         assertThrows(UnsupportedOperationException.class, () -> queue.toArray(new String[0]));
         assertThrows(UnsupportedOperationException.class, () -> queue.remove("test"));
-        assertThrows(UnsupportedOperationException.class, () -> queue.containsAll(Arrays.asList("test")));
-        assertThrows(UnsupportedOperationException.class, () -> queue.addAll(Arrays.asList("another")));
-        assertThrows(UnsupportedOperationException.class, () -> queue.removeAll(Arrays.asList("test")));
-        assertThrows(UnsupportedOperationException.class, () -> queue.retainAll(Arrays.asList("test")));
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> queue.containsAll(Arrays.asList("test")));
+        assertThrows(
+                UnsupportedOperationException.class, () -> queue.addAll(Arrays.asList("another")));
+        assertThrows(
+                UnsupportedOperationException.class, () -> queue.removeAll(Arrays.asList("test")));
+        assertThrows(
+                UnsupportedOperationException.class, () -> queue.retainAll(Arrays.asList("test")));
         assertThrows(UnsupportedOperationException.class, () -> queue.clear());
     }
 
@@ -212,7 +222,8 @@ public class CircularFifoQueueTest {
     public void iteratorRemoveUnsupported() {
         CircularFifoQueue<String> queue = new CircularFifoQueue<>(3);
         queue.add("one");
-        @SuppressWarnings("Var") Iterator<String> it = queue.iterator();
+        @SuppressWarnings("Var")
+        Iterator<String> it = queue.iterator();
         assertTrue(it.hasNext());
         it.next();
         assertThrows(UnsupportedOperationException.class, () -> it.remove());

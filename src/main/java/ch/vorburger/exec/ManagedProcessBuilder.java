@@ -23,6 +23,11 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.environment.EnvironmentUtils;
+import org.apache.commons.exec.util.StringUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,24 +36,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.environment.EnvironmentUtils;
-import org.apache.commons.exec.util.StringUtils;
 
 /**
  * Builder for ManagedProcess.
  *
- * <p>This is inspired by {@link java.lang.ProcessBuilder} &amp;
- * {@link org.apache.commons.exec.CommandLine}, and/but:
+ * <p>This is inspired by {@link java.lang.ProcessBuilder} &amp; {@link
+ * org.apache.commons.exec.CommandLine}, and/but:
  *
  * <p>It offers to add java.io.File arguments, and makes sure that their absolute path is used.
  *
- * <p>If no directory is set, it automatically sets the initial working directory using the directory
- * of executable if it was a File, and thus makes sure an initial working directory is always passed
- * to the process.
+ * <p>If no directory is set, it automatically sets the initial working directory using the
+ * directory of executable if it was a File, and thus makes sure an initial working directory is
+ * always passed to the process.
  *
- * <p>It intentionally doesn't offer "parsing" space delimited command "lines", but forces you to set
- * an executable and add arguments.
+ * <p>It intentionally doesn't offer "parsing" space delimited command "lines", but forces you to
+ * set an executable and add arguments.
  *
  * @author Michael Vorburger
  * @author Neelesh Shastry
@@ -121,7 +123,8 @@ public class ManagedProcessBuilder {
     /**
      * Adds an argument to the command.
      *
-     * @param arg the String Argument to add. It will be escaped with single or double quote if it contains a space.
+     * @param arg the String Argument to add. It will be escaped with single or double quote if it
+     *     contains a space.
      * @return this
      * @see ProcessBuilder
      */
@@ -132,8 +135,8 @@ public class ManagedProcessBuilder {
     }
 
     /**
-     * Adds a single argument to the command, composed of two parts.
-     * The two parts are independently escaped (see above), and then concatenated, without separator.
+     * Adds a single argument to the command, composed of two parts. The two parts are independently
+     * escaped (see above), and then concatenated, without separator.
      */
     @CanIgnoreReturnValue
     public ManagedProcessBuilder addArgument(String argPart1, String argPart2) {
@@ -142,20 +145,25 @@ public class ManagedProcessBuilder {
     }
 
     /**
-     * Adds a single argument to the command, composed of two parts and a given separator.
-     * The two parts are independently escaped (see above), and then concatenated using the separator.
+     * Adds a single argument to the command, composed of two parts and a given separator. The two
+     * parts are independently escaped (see above), and then concatenated using the separator.
      */
     @CanIgnoreReturnValue
-    @SuppressWarnings("InconsistentOverloads") // not changing this due to preserve backwards compatibility
-    protected ManagedProcessBuilder addArgument(String argPart1, String separator, String argPart2) {
+    @SuppressWarnings(
+            "InconsistentOverloads") // not changing this due to preserve backwards compatibility
+    protected ManagedProcessBuilder addArgument(
+            String argPart1, String separator, String argPart2) {
         // @see MariaDB4j Issue #30 why 'quoting' (https://github.com/vorburger/MariaDB4j/issues/30)
         StringBuilder sb = new StringBuilder();
         String arg;
 
-        // @see https://github.com/vorburger/MariaDB4j/issues/501 - Fix for spaces in data path doesn't work on windows:
+        // @see https://github.com/vorburger/MariaDB4j/issues/501 - Fix for spaces in data path
+        // doesn't
+        // work on windows:
         // Internally Runtime.exec() is being used, which says that an argument such
         // as --name="escaped value" isn't escaped, since there's no leading quote
-        // and it contains a space, so it re-escapes it, causing applications such as mysqld.exe to split
+        // and it contains a space, so it re-escapes it, causing applications such as mysqld.exe to
+        // split
         // it into multiple pieces, which is why we quote the whole arg (key and value) instead.
         // We do this trick only on Windows, because on Linux it breaks the behavior.
         if (isWindows()) {
@@ -178,8 +186,9 @@ public class ManagedProcessBuilder {
     }
 
     /**
-     * Adds a single argument to the command, composed of a prefix, separated by a '=', followed by a file path.
-     * The prefix and file path are independently escaped (see above), and then concatenated.
+     * Adds a single argument to the command, composed of a prefix, separated by a '=', followed by
+     * a file path. The prefix and file path are independently escaped (see above), and then
+     * concatenated.
      */
     @CanIgnoreReturnValue
     public ManagedProcessBuilder addFileArgument(String arg, File file) throws IOException {
@@ -242,7 +251,8 @@ public class ManagedProcessBuilder {
     }
 
     @CanIgnoreReturnValue
-    public ManagedProcessBuilder setOutputStreamLogDispatcher(OutputStreamLogDispatcher outputStreamLogDispatcher) {
+    public ManagedProcessBuilder setOutputStreamLogDispatcher(
+            OutputStreamLogDispatcher outputStreamLogDispatcher) {
         this.outputStreamLogDispatcher = outputStreamLogDispatcher;
         return this;
     }
@@ -254,9 +264,18 @@ public class ManagedProcessBuilder {
     // ----
 
     public ManagedProcess build() {
-        return new ManagedProcess(getCommandLine(), directory, environment, inputStream, destroyOnShutdown,
+        return new ManagedProcess(
+                getCommandLine(),
+                directory,
+                environment,
+                inputStream,
+                destroyOnShutdown,
                 consoleBufferMaxLines,
-                outputStreamLogDispatcher, stdOuts, stdErrs, listener, isSuccessExitValueChecker);
+                outputStreamLogDispatcher,
+                stdOuts,
+                stdErrs,
+                listener,
+                isSuccessExitValueChecker);
     }
 
     @CanIgnoreReturnValue
@@ -296,14 +315,13 @@ public class ManagedProcessBuilder {
             setWorkingDirectory(dir);
             // DO NOT } else {
             // throw new
-            // IllegalStateException("directory MUST be set (and could not be auto-determined from executable)");
+            // IllegalStateException("directory MUST be set (and could not be auto-determined from
+            // executable)");
         }
         return commonsExecCommandLine;
     }
 
-    /**
-     * Intended for debugging / logging, only.
-     */
+    /** Intended for debugging / logging, only. */
     @Override
     public String toString() {
         return commonsExecCommandLine.toString();

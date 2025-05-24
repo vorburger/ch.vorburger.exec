@@ -20,5 +20,6 @@
 package ch.vorburger.exec;
 
 public enum OutputStreamType {
-    STDOUT, STDERR
+    STDOUT,
+    STDERR
 }

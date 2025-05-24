@@ -24,10 +24,10 @@ import java.util.Collection;
 import java.util.Iterator;
 
 /**
- * A circular FIFO queue that stores a fixed number of elements.
- * When the queue is full, adding a new element removes the oldest element.
- * This class implements {@code java.util.Collection} to allow iteration,
- * specifically for the {@code getRecentLines()} method in {@code RollingLogOutputStream}.
+ * A circular FIFO queue that stores a fixed number of elements. When the queue is full, adding a
+ * new element removes the oldest element. This class implements {@code java.util.Collection} to
+ * allow iteration, specifically for the {@code getRecentLines()} method in {@code
+ * RollingLogOutputStream}.
  *
  * @param <E> the type of elements held in this collection
  * @author Jules (jules.google.com)
@@ -58,9 +58,10 @@ class CircularFifoQueue<E> implements Collection<E> {
         if (queue.size() >= maxSize) {
             queue.pollFirst(); // remove a head element if the queue is full
         }
-        return queue.offerLast(item); // add to tail, returns false if queue is full (capacity-restricted)
-                                      // but our manual pollFirst ensures this won't happen unless
-                                      // maxSize is 0, which is guarded by constructor.
+        // add to tail, returns false if queue is full (capacity-restricted)
+        // but our manual pollFirst ensures this won't happen unless
+        // maxSize is 0, which is guarded by constructor.
+        return queue.offerLast(item);
     }
 
     @Override

@@ -27,18 +27,16 @@ public class StopCheckExecuteWatchdog extends ExecuteWatchdog {
     /**
      * Creates a new watchdog with a given timeout.
      *
-     * @param timeout
-     *         the timeout for the process in milliseconds. It must be
-     *         greater than 0 or 'INFINITE_TIMEOUT'
+     * @param timeout the timeout for the process in milliseconds. It must be greater than 0 or
+     *     'INFINITE_TIMEOUT'
      */
-    @SuppressWarnings("deprecation") // TODO https://github.com/vorburger/ch.vorburger.exec/issues/189
+    @SuppressWarnings(
+            "deprecation") // TODO https://github.com/vorburger/ch.vorburger.exec/issues/189
     public StopCheckExecuteWatchdog(long timeout) {
         super(timeout);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public synchronized void stop() {
         super.stop();

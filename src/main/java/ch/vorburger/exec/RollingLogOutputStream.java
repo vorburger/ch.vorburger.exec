@@ -58,5 +58,4 @@ class RollingLogOutputStream extends LogOutputStream {
         }
         return sb.toString();
     }
-
 }

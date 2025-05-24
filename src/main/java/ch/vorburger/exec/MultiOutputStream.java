@@ -21,6 +21,7 @@ package ch.vorburger.exec;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.Var;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -43,8 +44,7 @@ public class MultiOutputStream extends OutputStream {
 
     protected final List<OutputStream> streams = new ArrayList<>();
 
-    public MultiOutputStream() {
-    }
+    public MultiOutputStream() {}
 
     public MultiOutputStream(OutputStream... delegates) {
         for (OutputStream delegate : delegates) {
@@ -66,8 +66,7 @@ public class MultiOutputStream extends OutputStream {
 
     @Override
     public void write(int b) throws IOException {
-        @Var
-        MultiCauseIOException mex = null;
+        @Var MultiCauseIOException mex = null;
         for (OutputStream stream : streams) {
             try {
                 stream.write(b);
@@ -85,8 +84,7 @@ public class MultiOutputStream extends OutputStream {
 
     @Override
     public void write(byte[] b) throws IOException {
-        @Var
-        MultiCauseIOException mex = null;
+        @Var MultiCauseIOException mex = null;
         for (OutputStream stream : streams) {
             try {
                 stream.write(b);
@@ -104,8 +102,7 @@ public class MultiOutputStream extends OutputStream {
 
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
-        @Var
-        MultiCauseIOException mex = null;
+        @Var MultiCauseIOException mex = null;
         for (OutputStream stream : streams) {
             try {
                 stream.write(b, off, len);
@@ -123,8 +120,7 @@ public class MultiOutputStream extends OutputStream {
 
     @Override
     public void flush() throws IOException {
-        @Var
-        MultiCauseIOException mex = null;
+        @Var MultiCauseIOException mex = null;
         for (OutputStream stream : streams) {
             try {
                 stream.flush();
@@ -142,8 +138,7 @@ public class MultiOutputStream extends OutputStream {
 
     @Override
     public void close() throws IOException {
-        @Var
-        MultiCauseIOException mex = null;
+        @Var MultiCauseIOException mex = null;
         for (OutputStream stream : streams) {
             try {
                 stream.close();
@@ -158,5 +153,4 @@ public class MultiOutputStream extends OutputStream {
             throw mex;
         }
     }
-
 }

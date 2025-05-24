@@ -26,8 +26,7 @@ import org.slf4j.event.Level;
 /**
  * OutputStream which logs to SLF4j.
  *
- * <p>
- * With many thanks to
+ * <p>With many thanks to
  * http://stackoverflow.com/questions/5499042/writing-output-error-to-log-files-using
  * -pumpstreamhandler
  *
@@ -42,7 +41,10 @@ class SLF4jLogOutputStream extends LogOutputStream {
     private final OutputStreamType type;
     private final String pid;
 
-    protected SLF4jLogOutputStream(Logger logger, String pid, OutputStreamType type,
+    protected SLF4jLogOutputStream(
+            Logger logger,
+            String pid,
+            OutputStreamType type,
             OutputStreamLogDispatcher dispatcher) {
         this.dispatcher = dispatcher;
         this.logger = logger;
@@ -64,5 +66,4 @@ class SLF4jLogOutputStream extends LogOutputStream {
             case ERROR -> logger.error("{}: {}", pid, line);
         }
     }
-
 }

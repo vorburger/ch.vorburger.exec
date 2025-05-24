@@ -25,9 +25,10 @@ import static org.hamcrest.core.StringEndsWith.endsWith;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.Test;
+
+import java.io.File;
 
 /**
  * Tests {@link ManagedProcessBuilder}.
@@ -38,8 +39,8 @@ public class ManagedProcessBuilderTest {
 
     @Test
     public void managedProcessBuilder() throws Exception {
-        ManagedProcessBuilder mbp = new ManagedProcessBuilder(new File(
-                "/somewhere/absolute/bin/thing"));
+        ManagedProcessBuilder mbp =
+                new ManagedProcessBuilder(new File("/somewhere/absolute/bin/thing"));
 
         File arg = new File("relative/file");
         mbp.addArgument(arg);

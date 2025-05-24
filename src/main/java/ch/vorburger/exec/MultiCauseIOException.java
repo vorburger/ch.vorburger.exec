@@ -55,7 +55,8 @@ public class MultiCauseIOException extends IOException {
     // protected void checkUsage() throws IllegalStateException {
     // if (causes.isEmpty())
     // throw new
-    // IllegalStateException("Wrong usage of MultiCauseIOException in code; must call add() at least once before");
+    // IllegalStateException("Wrong usage of MultiCauseIOException in code; must call add() at least
+    // once before");
     // }
 
     public List<IOException> getCauses() {
@@ -115,5 +116,4 @@ public class MultiCauseIOException extends IOException {
     public void setStackTrace(@SuppressWarnings("unused") StackTraceElement[] stackTrace) {
         throw new UnsupportedOperationException();
     }
-
 }

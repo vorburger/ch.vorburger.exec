@@ -19,17 +19,19 @@
  */
 package ch.vorburger.exec;
 
-import java.lang.invoke.MethodHandles;
+import static org.slf4j.LoggerFactory.getLogger;
+
 import org.apache.commons.exec.ShutdownHookProcessDestroyer;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class LoggingShutdownHookProcessDestroyer extends ShutdownHookProcessDestroyer {
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger LOG = getLogger(LoggingShutdownHookProcessDestroyer.class);
 
     @Override
     public void run() {
-        logger.info("Shutdown Hook: JVM is about to exit! Going to kill destroyOnShutdown processes...");
+        LOG.info(
+                "Shutdown Hook: JVM is about to exit! Going to kill destroyOnShutdown"
+                        + " processes...");
         super.run();
     }
 }
