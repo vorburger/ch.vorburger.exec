@@ -22,8 +22,6 @@ package ch.vorburger.exec;
 import static ch.vorburger.exec.OutputStreamType.STDERR;
 import static ch.vorburger.exec.OutputStreamType.STDOUT;
 
-import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import com.google.errorprone.annotations.Var;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +36,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
+
 import javax.annotation.Nullable;
+
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteWatchdog;
@@ -47,6 +47,9 @@ import org.apache.commons.exec.ProcessDestroyer;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.google.errorprone.annotations.Var;
 
 /**
  * Managed OS Process (Executable, Program, Command). Created by
@@ -300,9 +303,8 @@ public class ManagedProcess implements ManagedProcessState {
                 }
             }
 
-            // If we got out of the while() loop due to !isAlive() instead of messageInConsole, then
-            // throw
-            // the same exception as above!
+            // If we got out of the while() loop due to !isAlive() instead of messageInConsole,
+            // so this means that we finished very fast, then throw the same exception as above!
             if (!checkingConsoleOutputStream.hasSeenIt()) {
                 throw new ManagedProcessException(getUnexpectedExitMsg(messageInConsole));
             } else {
@@ -341,8 +343,9 @@ public class ManagedProcess implements ManagedProcessState {
                 throw handleInterruptedException(e);
             } catch (ExecutionException e) {
                 logger.error(getProcLongName() + " failed", e);
-                throw new ManagedProcessException(getProcLongName() + " failed with Exception: " + getLastConsoleLines(),
-                    e);
+                throw new ManagedProcessException(
+                        getProcLongName() + " failed with Exception: " + getLastConsoleLines(),
+                        e);
             }
         }
     }
@@ -362,7 +365,7 @@ public class ManagedProcess implements ManagedProcessState {
         if (!isAlive) {
             asyncResult.cancel(false);
             throw new ManagedProcessException(getProcLongName()
-                + " was already stopped (or never started)");
+                    + " was already stopped (or never started)");
         }
         if (logger.isDebugEnabled()) {
             logger.debug("Going to destroy {}", getProcLongName());
@@ -376,7 +379,7 @@ public class ManagedProcess implements ManagedProcessState {
         } catch (InterruptedException e) {
             throw handleInterruptedException(e);
         } catch (ExecutionException e) {
-          // process failed, likely because it was destroyed
+            // process failed, likely because it was destroyed
         }
 
         if (logger.isInfoEnabled()) {
@@ -490,7 +493,7 @@ public class ManagedProcess implements ManagedProcessState {
         } catch (Exception e) {
             logger.error(getProcLongName() + " failed", e);
             throw new ManagedProcessException(getProcLongName() + " failed with Exception: "
-                + getLastConsoleLines(), e);
+                    + getLastConsoleLines(), e);
         }
     }
 
