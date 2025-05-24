@@ -28,6 +28,7 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -127,9 +128,7 @@ public class ManagedProcessTest {
 
         assertEquals(false, p.isAlive());
         p.startAndWaitForConsoleMessageMaxMs(exec.msgToWaitFor, 1000);
-        // can't assertThat(p.isAlive(), is(true)); - if p finishes too fast, this fails -
-        // unreliable
-        // test :(
+        // NB: We can't assertThat(p.isAlive(), is(true)); - if p finishes too fast, that fails!
 
         p.waitForExit();
         p.exitValue(); // just making sure it works, don't check, as Win/NIX diff.
