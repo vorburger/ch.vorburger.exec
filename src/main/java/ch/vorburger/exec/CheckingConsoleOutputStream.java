@@ -19,6 +19,8 @@
  */
 package ch.vorburger.exec;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.commons.exec.LogOutputStream;
 
 /**
@@ -33,7 +35,7 @@ import org.apache.commons.exec.LogOutputStream;
 class CheckingConsoleOutputStream extends LogOutputStream {
 
     private final String watchOutFor;
-    private boolean seenIt = false;
+    private AtomicBoolean seenIt = new AtomicBoolean(false);
 
     CheckingConsoleOutputStream(String watchOutFor) {
         if (watchOutFor.contains("\n")) {
@@ -45,12 +47,12 @@ class CheckingConsoleOutputStream extends LogOutputStream {
     @Override
     protected void processLine(String line, @SuppressWarnings("unused") int level) {
         if (line.contains(watchOutFor)) {
-            seenIt = true;
+            seenIt.set(true);
         }
     }
 
     public boolean hasSeenIt() {
-        return seenIt;
+        return seenIt.get();
     }
 
 }
