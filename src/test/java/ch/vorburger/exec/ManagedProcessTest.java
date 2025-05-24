@@ -27,11 +27,11 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import javax.annotation.Nullable;
-
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import javax.annotation.Nullable;
 
 /**
  * Tests ManagedProcess.
@@ -54,9 +54,11 @@ public class ManagedProcessTest {
     public void onProcessFailedInvokedOnCustomListenerTraditional() throws Exception {
         TestListener listener = new TestListener();
         SomeSelfTerminatingExec exec = someSelfTerminatingFailingExec(listener, false);
-        assertThrows(ManagedProcessException.class, () -> {
-            exec.proc.startAndWaitForConsoleMessageMaxMs(exec.msgToWaitFor, 1000);
-        });
+        assertThrows(
+                ManagedProcessException.class,
+                () -> {
+                    exec.proc.startAndWaitForConsoleMessageMaxMs(exec.msgToWaitFor, 1000);
+                });
         assertEquals(Integer.MIN_VALUE, listener.expectedExitValue);
         assertNotEquals(Integer.MIN_VALUE, listener.failureExitValue);
         assertNotNull(listener.t);
@@ -118,7 +120,9 @@ public class ManagedProcessTest {
         ManagedProcess p = someSelfTerminatingExec().proc;
         // this process should have terminated itself faster than in 1s (1000ms),
         // but this should not cause this to hang, but must throw an ManagedProcessException
-        assertThrows(ManagedProcessException.class, () -> p.startAndWaitForConsoleMessageMaxMs("...", 1000));
+        assertThrows(
+                ManagedProcessException.class,
+                () -> p.startAndWaitForConsoleMessageMaxMs("...", 1000));
     }
 
     @Test
@@ -153,21 +157,33 @@ public class ManagedProcessTest {
         return someSelfTerminatingExec(null);
     }
 
-    protected SomeSelfTerminatingExec someSelfTerminatingExec(@Nullable ManagedProcessListener listener)
-            throws ManagedProcessException {
+    protected SomeSelfTerminatingExec someSelfTerminatingExec(
+            @Nullable ManagedProcessListener listener) throws ManagedProcessException {
         SomeSelfTerminatingExec r = new SomeSelfTerminatingExec();
         if (SystemUtils.IS_OS_WINDOWS) {
-            r.proc = new ManagedProcessBuilder("cmd.exe").addArgument("/C").addArgument("dir").addArgument("/X")
-                    .setProcessListener(listener).build();
+            r.proc =
+                    new ManagedProcessBuilder("cmd.exe")
+                            .addArgument("/C")
+                            .addArgument("dir")
+                            .addArgument("/X")
+                            .setProcessListener(listener)
+                            .build();
             r.msgToWaitFor = "bytes free";
         } else if (SystemUtils.IS_OS_SOLARIS) {
-            r.proc = new ManagedProcessBuilder("true").addArgument("--version").setProcessListener(listener).build();
+            r.proc =
+                    new ManagedProcessBuilder("true")
+                            .addArgument("--version")
+                            .setProcessListener(listener)
+                            .build();
             r.msgToWaitFor = "true (GNU coreutils)";
         } else if (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC) {
-            r.proc = new ManagedProcessBuilder("echo")
-                    .addArgument("\"Lorem ipsum dolor sit amet, consectetur adipisci elit, "
-                            + " sed eiusmod tempor incidunt ut \nlabore et dolore magna aliqua.\"")
-                    .setProcessListener(listener).build();
+            r.proc =
+                    new ManagedProcessBuilder("echo")
+                            .addArgument(
+                                    "\"Lorem ipsum dolor sit amet, consectetur adipisci elit, "
+                                            + " sed eiusmod tempor incidunt ut \nlabore et dolore magna aliqua.\"")
+                            .setProcessListener(listener)
+                            .build();
             r.msgToWaitFor = "incidunt";
         } else {
             throw new ManagedProcessException("Unexpected Platform, improve the test dude...");
@@ -176,14 +192,16 @@ public class ManagedProcessTest {
         return r;
     }
 
-    protected SomeSelfTerminatingExec someSelfTerminatingFailingExec(ManagedProcessListener listener,
-            boolean setExitValueChecker)
+    protected SomeSelfTerminatingExec someSelfTerminatingFailingExec(
+            ManagedProcessListener listener, boolean setExitValueChecker)
             throws ManagedProcessException {
         ManagedProcessBuilder builder;
         SomeSelfTerminatingExec r = new SomeSelfTerminatingExec();
         if (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC) {
             builder = new ManagedProcessBuilder("ls").addArgument("-4");
-            // ls (GNU coreutils) 9.1 invoked as "ls -4" prints "ls: invalid option -- '4' \n Try 'ls --help' for more information."
+            // ls (GNU coreutils) 9.1 invoked as "ls -4" prints "ls: invalid option -- '4' \n Try
+            // 'ls
+            // --help' for more information."
             r.msgToWaitFor = "invalid option";
         } else if (SystemUtils.IS_OS_WINDOWS) {
             builder = new ManagedProcessBuilder("dir").addArgument("/?");
@@ -234,12 +252,18 @@ public class ManagedProcessTest {
     }
 
     @Test
-    @Ignore("See https://github.com/vorburger/ch.vorburger.exec/issues/269, and fix this test somehow...") // TODO FIXME
+    @Ignore(
+            "See https://github.com/vorburger/ch.vorburger.exec/issues/269, and fix this test somehow...") // TODO FIXME
     public void whoAmI() throws Exception {
         if (SystemUtils.IS_OS_WINDOWS) {
             return;
         }
-        ManagedProcess p = new ManagedProcessBuilder("/usr/bin/who").addArgument("am").addArgument("i").build().start();
+        ManagedProcess p =
+                new ManagedProcessBuilder("/usr/bin/who")
+                        .addArgument("am")
+                        .addArgument("i")
+                        .build()
+                        .start();
         assertEquals(0, p.waitForExit());
         assertFalse(p.getConsole().isEmpty());
     }

@@ -21,8 +21,8 @@ package ch.vorburger.exec;
 
 public interface ManagedProcessState {
 
-    boolean startAndWaitForConsoleMessageMaxMs(String messageInConsole,
-            long maxWaitUntilReturning) throws ManagedProcessException;
+    boolean startAndWaitForConsoleMessageMaxMs(String messageInConsole, long maxWaitUntilReturning)
+            throws ManagedProcessException;
 
     void destroy() throws ManagedProcessException;
 

@@ -19,15 +19,15 @@
  */
 package ch.vorburger.exec;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.apache.commons.exec.LogOutputStream;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * OutputStream which watches out for the occurrence of a keyword (String).
  *
- * <p>Used to watch check the console output of a daemon ManagedProcess for some "started up OK" kind
- * of message.
+ * <p>Used to watch check the console output of a daemon ManagedProcess for some "started up OK"
+ * kind of message.
  *
  * @author Michael Vorburger
  */
@@ -35,7 +35,7 @@ import org.apache.commons.exec.LogOutputStream;
 class CheckingConsoleOutputStream extends LogOutputStream {
 
     private final String watchOutFor;
-    private AtomicBoolean seenIt = new AtomicBoolean(false);
+    private final AtomicBoolean seenIt = new AtomicBoolean(false);
 
     CheckingConsoleOutputStream(String watchOutFor) {
         if (watchOutFor.contains("\n")) {
@@ -54,5 +54,4 @@ class CheckingConsoleOutputStream extends LogOutputStream {
     public boolean hasSeenIt() {
         return seenIt.get();
     }
-
 }

@@ -28,6 +28,5 @@ public final class NonExistingMain {
         p.start();
     }
 
-    private NonExistingMain() {
-    }
+    private NonExistingMain() {}
 }

@@ -37,5 +37,4 @@ public class ManagedProcessException extends IOException {
     public ManagedProcessException(String message) {
         super(message);
     }
-
 }

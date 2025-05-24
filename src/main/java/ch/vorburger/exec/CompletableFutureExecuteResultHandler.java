@@ -19,9 +19,10 @@
  */
 package ch.vorburger.exec;
 
-import java.util.concurrent.CompletableFuture;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteResultHandler;
+
+import java.util.concurrent.CompletableFuture;
 
 class CompletableFutureExecuteResultHandler implements ExecuteResultHandler {
 
@@ -32,20 +33,20 @@ class CompletableFutureExecuteResultHandler implements ExecuteResultHandler {
     }
 
     /**
-    * The asynchronous execution completed.
-    *
-    * @param exitValue the exit value of the sub-process
-    */
+     * The asynchronous execution completed.
+     *
+     * @param exitValue the exit value of the sub-process
+     */
     @Override
     public void onProcessComplete(int exitValue) {
         asyncResult.complete(exitValue);
     }
 
     /**
-    * The asynchronous execution failed.
-    *
-    * @param e the {@code ExecuteException} containing the root cause
-    */
+     * The asynchronous execution failed.
+     *
+     * @param e the {@code ExecuteException} containing the root cause
+     */
     @Override
     public void onProcessFailed(ExecuteException e) {
         asyncResult.completeExceptionally(e);
