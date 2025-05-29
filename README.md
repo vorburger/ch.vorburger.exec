@@ -63,13 +63,16 @@ both from [OpenDaylight](http://www.opendaylight.org)); later for use in <https:
 Similar Projects
 ---
 
-For the _exec_ functionality, [zt-exec](https://github.com/zeroturnaround/zt-exec) (with [zt-process-killer](https://github.com/zeroturnaround/zt-process-killer)) is similar ([but refused to backlink us](https://github.com/zeroturnaround/zt-exec/pull/25)).
-
-[NuProcess](https://github.com/brettwooldridge/NuProcess) is another similar library in the same space.
-
-[`fleipold/jproc`](https://github.com/fleipold/jproc] is yet another similar library.
-
-[os-lib](https://github.com/com-lihaoyi/os-lib) is a Scala library including functionality like this.
+* `dev.enola.common.exec` has the possible NextGen API; watch [#285](https://github.com/vorburger/ch.vorburger.exec/issues/285)
+* [`Pty4j`](https://github.com/JetBrains/pty4j) executes under a [PTY](https://en.m.wikipedia.org/wiki/Pseudoterminal):
+  * use it [with JLine](https://github.com/JetBrains/pty4j/issues/170) to `terminal.enterRawMode()` (if needed)
+  * `jansi` (in [newer] [JLine](https://github.com/jline/jline3/commits/master/jansi-core) and [older] [fusesource](https://github.com/fusesource/jansi)) can filter out ANSI escapes from exec output
+* [`NuProcess`](https://github.com/brettwooldridge/NuProcess) is another similar library in the same space, using native binding.
+* [`jnr-process`](https://github.com/jnr/jnr-process) is yet another such library, also with native binding.
+* [`fleipold/jproc`](https://github.com/fleipold/jproc) is yet another similar library, also native.
+* [`zt-exec`](https://github.com/zeroturnaround/zt-exec) (with [zt-process-killer](https://github.com/zeroturnaround/zt-process-killer)) is also similar ([but refused to backlink us](https://github.com/zeroturnaround/zt-exec/pull/25)).
+* [`os-lib`](https://github.com/com-lihaoyi/os-lib) is a Scala library including functionality like this.
+* [Apache Commons Exec](https://commons.apache.org/proper/commons-exec/): See above.
 
 Related Projects
 ---
