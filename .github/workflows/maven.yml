@@ -16,7 +16,7 @@ jobs:
         java: [ '17', '21' ]
     name: Java ${{ matrix.Java }} CI
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set JDK ${{ matrix.Java }}
         uses: actions/setup-java@v4
