@@ -32,7 +32,7 @@ import org.slf4j.event.Level;
  * @author Michael Vorburger
  */
 // intentionally package local
-@SuppressWarnings("MemberName") // https://errorprone.info/bugpattern/IdentifierName
+@SuppressWarnings("IdentifierName") // https://errorprone.info/bugpattern/IdentifierName
 class SLF4jLogOutputStream extends LogOutputStream {
 
     private final OutputStreamLogDispatcher dispatcher;
