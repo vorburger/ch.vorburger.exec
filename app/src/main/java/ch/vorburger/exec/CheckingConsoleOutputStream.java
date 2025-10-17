@@ -20,6 +20,7 @@
 package ch.vorburger.exec;
 
 import org.apache.commons.exec.LogOutputStream;
+import org.jspecify.annotations.Nullable;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -36,22 +37,30 @@ class CheckingConsoleOutputStream extends LogOutputStream {
 
     private final String watchOutFor;
     private final AtomicBoolean seenIt = new AtomicBoolean(false);
+    private final @Nullable Runnable onSeen;
 
+    @SuppressWarnings("unused")
     CheckingConsoleOutputStream(String watchOutFor) {
+        this(watchOutFor, null);
+    }
+
+    CheckingConsoleOutputStream(String watchOutFor, @Nullable Runnable onSeen) {
         if (watchOutFor.contains("\n")) {
             throw new IllegalArgumentException("Cannot handle newlines (CR) ...");
         }
         this.watchOutFor = watchOutFor;
+        this.onSeen = onSeen;
     }
 
     @Override
-    protected void processLine(String line, @SuppressWarnings("unused") int level) {
-        if (line.contains(watchOutFor)) {
-            seenIt.set(true);
+    protected void processLine(String line, int level) {
+        if (!hasSeenIt() && line.contains(watchOutFor)) {
+            if (seenIt.compareAndSet(false, true) && onSeen != null) {
+                onSeen.run();
+            }
         }
     }
 
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean hasSeenIt() {
         return seenIt.get();
     }

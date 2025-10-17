@@ -29,7 +29,7 @@ import java.io.Serial;
  */
 public class ManagedProcessException extends IOException {
 
-    @Serial private static final long serialVersionUID = -5945369742058979996L;
+    @Serial private static final long serialVersionUID = 1L;
 
     public ManagedProcessException(String message, Throwable cause) {
         super(message, cause);

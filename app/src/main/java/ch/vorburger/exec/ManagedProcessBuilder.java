@@ -27,6 +27,7 @@ import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.exec.util.StringUtils;
 import org.jspecify.annotations.Nullable;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -111,7 +112,8 @@ public class ManagedProcessBuilder {
      *
      * @param arg the Path to add
      * @return this
-     * @throws IOException if Path toRealPath() fails
+     * @throws IOException if {@link Path#toRealPath(LinkOption...)} and the {@link File#getCanonicalPath()}
+     *     fallback both fail.
      * @see ProcessBuilder
      */
     @CanIgnoreReturnValue
@@ -120,7 +122,6 @@ public class ManagedProcessBuilder {
         try {
             canonical = arg.toRealPath().toString();
         } catch (IOException e) {
-            // Fall back to the old canonical behavior
             canonical = arg.toFile().getCanonicalPath();
         }
 
@@ -197,6 +198,8 @@ public class ManagedProcessBuilder {
      * Adds a single argument to the command, composed of a prefix, separated by a '=', followed by
      * a file path. The prefix and file path are independently escaped (see above), and then
      * concatenated.
+     *
+     * @throws IOException if {@link Path#toRealPath(LinkOption...)} and the {@link File#getCanonicalPath()}
      */
     @SuppressWarnings("unused")
     @CanIgnoreReturnValue
@@ -205,7 +208,6 @@ public class ManagedProcessBuilder {
         try {
             canonical = path.toRealPath().toString();
         } catch (IOException e) {
-            // Fall back to the old canonical behavior
             canonical = path.toFile().getCanonicalPath();
         }
         return addArgument(arg, "=", canonical);

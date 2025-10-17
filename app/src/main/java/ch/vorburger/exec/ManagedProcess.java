@@ -19,8 +19,11 @@
  */
 package ch.vorburger.exec;
 
+import static ch.vorburger.exec.OutputStreamType.STDERR;
+import static ch.vorburger.exec.OutputStreamType.STDOUT;
+
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import com.google.errorprone.annotations.Var;
+
 import org.apache.commons.exec.*;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.io.IOUtils;
@@ -37,9 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.function.IntPredicate;
-
-import static ch.vorburger.exec.OutputStreamType.STDERR;
-import static ch.vorburger.exec.OutputStreamType.STDOUT;
 
 /**
  * Managed OS Process (Executable, Program, Command). Created by {@link
@@ -63,9 +63,8 @@ public class ManagedProcess implements ManagedProcessState {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    public static final int EXITVALUE_DESTROYED = Executor.INVALID_EXITVALUE - 1;
-    public static final int EXITVALUE_STILL_RUNNING = Executor.INVALID_EXITVALUE - 2;
-    private static final int SLEEP_TIME_MS = 50;
+    public static final int EXIT_VALUE_DESTROYED = Executor.INVALID_EXITVALUE - 1;
+    public static final int EXIT_VALUE_STILL_RUNNING = Executor.INVALID_EXITVALUE - 2;
 
     private final CommandLine commandLine;
     private final ExtendedDefaultExecutor executor;
@@ -82,7 +81,7 @@ public class ManagedProcess implements ManagedProcessState {
     private final MultiOutputStream stdout;
     private final MultiOutputStream stderr;
 
-    private volatile boolean isAlive = false;
+    private volatile boolean started = false;
     private @Nullable String procShortName;
     private @Nullable RollingLogOutputStream console;
 
@@ -119,13 +118,7 @@ public class ManagedProcess implements ManagedProcessState {
             IntPredicate exitValueChecker) {
         this.commandLine = commandLine;
         this.environment = environment;
-        if (input != null) {
-            this.input = IOUtils.buffer(input);
-        } else {
-            this.input = null; // this is safe/OK/expected; PumpStreamHandler constructor handles
-            // this as
-            // expected
-        }
+        this.input = input != null ? IOUtils.buffer(input) : null;
         executor = new ExtendedDefaultExecutor(directory);
         executor.setWatchdog(watchDog);
         executor.setIsSuccessExitValueChecker(exitValueChecker);
@@ -154,6 +147,7 @@ public class ManagedProcess implements ManagedProcessState {
                     }
                     return null;
                 });
+        asyncResult.whenComplete((v, e) -> started = false);
         this.stdout = new MultiOutputStream();
         this.stderr = new MultiOutputStream();
         for (OutputStream stdOut : stdOuts) {
@@ -172,9 +166,12 @@ public class ManagedProcess implements ManagedProcessState {
      * different waitFor... methods if you want to "block" on the spawned process.
      *
      * @throws ManagedProcessException if the process could not be started
+     * @throws ManagedProcessInterruptedException if the thread was interrupted while waiting
+     *     (unexpected in normal operation).
      */
     @CanIgnoreReturnValue
-    public synchronized ManagedProcess start() throws ManagedProcessException {
+    public synchronized ManagedProcess start()
+            throws ManagedProcessException, ManagedProcessInterruptedException {
         startPreparation();
         startExecute();
         return this;
@@ -196,9 +193,9 @@ public class ManagedProcess implements ManagedProcessState {
 
         String pid = getProcShortName();
         stdout.addOutputStream(
-                        new SLF4jLogOutputStream(logger, pid, STDOUT, outputStreamLogDispatcher));
+                new SLF4jLogOutputStream(logger, pid, STDOUT, outputStreamLogDispatcher));
         stderr.addOutputStream(
-                        new SLF4jLogOutputStream(logger, pid, STDERR, outputStreamLogDispatcher));
+                new SLF4jLogOutputStream(logger, pid, STDERR, outputStreamLogDispatcher));
 
         if (consoleBufferMaxLines > 0) {
             console = new RollingLogOutputStream(consoleBufferMaxLines);
@@ -215,12 +212,14 @@ public class ManagedProcess implements ManagedProcessState {
         return Path.of(commandLine.getExecutable());
     }
 
-    protected synchronized void startExecute() throws ManagedProcessException {
+    protected synchronized void startExecute()
+            throws ManagedProcessException, ManagedProcessInterruptedException {
         try {
             executor.execute(
                     commandLine,
                     environment,
                     new CompletableFutureExecuteResultHandler(asyncResult));
+            started = true;
         } catch (IOException e) {
             throw new ManagedProcessException("Launch failed: " + commandLine, e);
         }
@@ -241,16 +240,9 @@ public class ManagedProcess implements ManagedProcessState {
         try {
             this.wait(100); // better than Thread.sleep(100); -- thank you, FindBugs
         } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw handleInterruptedException(e);
+            throw handleInterruptedException("startExecute", e);
         }
         checkResult();
-
-        // watchDog.isWatching() blocks if the process never started or already finished,
-        // so we have to do it only after checkResult() had a chance to throw
-        // ManagedProcessException
-        isAlive = watchDog.isWatching(); // check watchdog is watching as DefaultExecutor sets
-        // watchDog if process started successfully
     }
 
     /**
@@ -263,54 +255,53 @@ public class ManagedProcess implements ManagedProcessState {
      * @param messageInConsole text to wait for in the STDOUT/STDERR of the external process
      * @param maxWaitUntilReturning maximum time to wait, in milliseconds, until returning, if
      *     message wasn't seen returning due to max. wait timeout
+     * @throws IOException if {@link CheckingConsoleOutputStream} has trouble closing
      * @throws ManagedProcessException for problems such as if the process already exited (without
      *     the message ever appearing in the Console)
+     * @throws ManagedProcessInterruptedException if the thread was interrupted while waiting
+     *     (unexpected in normal operation).
      */
-    @SuppressWarnings("BusyWait")
     @Override
     public boolean startAndWaitForConsoleMessageMaxMs(
-            String messageInConsole, long maxWaitUntilReturning) throws IOException {
+            String messageInConsole, long maxWaitUntilReturning)
+            throws IOException, ManagedProcessInterruptedException {
         startPreparation();
 
+        CompletableFuture<Boolean> seen = new CompletableFuture<>();
+
         try (CheckingConsoleOutputStream checkingConsoleOutputStream =
-                new CheckingConsoleOutputStream(messageInConsole)) {
+                new CheckingConsoleOutputStream(messageInConsole, () -> seen.complete(true))) {
             stdout.addOutputStream(checkingConsoleOutputStream);
             stderr.addOutputStream(checkingConsoleOutputStream);
 
-            @Var long timeAlreadyWaited = 0;
             logger.info(
-                    "Thread will wait for \"{}\" to appear in Console output of process {} for max. {}ms",
+                    "Waiting up to {}ms for \"{}\" in console output of {}",
+                    maxWaitUntilReturning,
                     messageInConsole,
-                    getProcLongName(),
-                    maxWaitUntilReturning);
+                    getProcLongName());
 
             startExecute();
 
-            try {
-                while (!checkingConsoleOutputStream.hasSeenIt() && isAlive()) {
-                    try {
-                        Thread.sleep(SLEEP_TIME_MS);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        throw handleInterruptedException(e);
-                    }
-                    timeAlreadyWaited += SLEEP_TIME_MS;
-                    if (timeAlreadyWaited > maxWaitUntilReturning) {
-                        logger.warn(
-                                "Timed out waiting for \"\"{}\"\" after {}ms (returning false)",
-                                messageInConsole,
-                                maxWaitUntilReturning);
-                        return false;
-                    }
-                }
+            CompletableFuture<Boolean> exitFuture = asyncResult.handle((v, e) -> Boolean.FALSE);
 
-                // If we got out of the while() loop due to !isAlive() instead of messageInConsole,
-                // so this means that we finished very fast, then throw the same exception as above!
-                if (!checkingConsoleOutputStream.hasSeenIt()) {
-                    throw new ManagedProcessException(getUnexpectedExitMsg(messageInConsole));
-                } else {
+            CompletableFuture<Boolean> result = seen.applyToEither(exitFuture, b -> b);
+
+            try {
+                boolean ok = result.get(maxWaitUntilReturning, TimeUnit.MILLISECONDS);
+                if (ok) {
                     return true;
                 }
+                throw new ManagedProcessException(getUnexpectedExitMsg(messageInConsole));
+            } catch (TimeoutException te) {
+                logger.warn(
+                        "Timed out waiting for \"{}\" after {} ms (returning false)",
+                        messageInConsole,
+                        maxWaitUntilReturning);
+                return false;
+            } catch (InterruptedException ie) {
+                throw handleInterruptedException("startAndWaitForConsoleMessageMaxMs", ie);
+            } catch (ExecutionException ee) {
+                throw new IOException("Error while waiting for console message", ee.getCause());
             } finally {
                 stdout.removeOutputStream(checkingConsoleOutputStream);
                 stderr.removeOutputStream(checkingConsoleOutputStream);
@@ -327,24 +318,21 @@ public class ManagedProcess implements ManagedProcessState {
                 + getLastConsoleLines();
     }
 
-    protected ManagedProcessException handleInterruptedException(InterruptedException e) {
-        // TODO Not sure how to best handle this... opinions welcome (see also below)
-        String message =
-                "Huh?! InterruptedException should normally never happen here..."
-                        + getProcLongName();
-        logger.error(message, e);
-        return new ManagedProcessException(message, e);
+    protected ManagedProcessInterruptedException handleInterruptedException(
+            String where, InterruptedException e) {
+        Thread.currentThread().interrupt();
+        return ManagedProcessInterruptedException.withCause(where, getProcLongName(), e);
     }
 
     // TODO we could add this as a closure on the CompletableFuture instead of checking
-    protected void checkResult() throws ManagedProcessException {
+    protected void checkResult()
+            throws ManagedProcessException, ManagedProcessInterruptedException {
         if (asyncResult.isCompletedExceptionally()) {
             // We already terminated (or never started)
             try {
                 asyncResult.get(); // just called to throw the exception
             } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw handleInterruptedException(e);
+                throw handleInterruptedException("checkResult", e);
             } catch (ExecutionException e) {
                 throw new ManagedProcessException(
                         getProcLongName() + " failed with Exception: " + getLastConsoleLines(), e);
@@ -359,12 +347,14 @@ public class ManagedProcess implements ManagedProcessState {
      *
      * @throws ManagedProcessException if the Process is already stopped (either because destroy()
      *     already explicitly called, or it terminated by itself, or it was never started)
+     * @throws ManagedProcessInterruptedException if the thread was interrupted while waiting
+     *     (unexpected in normal operation).
      */
     @Override
-    public void destroy() throws ManagedProcessException {
+    public void destroy() throws ManagedProcessException, ManagedProcessInterruptedException {
         // Note: If destroy() is ever giving any trouble, the
         // org.openqa.selenium.os.ProcessUtils may be of interest.
-        if (!isAlive) {
+        if (!isAlive()) {
             asyncResult.cancel(false);
             throw new ManagedProcessException(
                     getProcLongName() + " was already stopped (or never started)");
@@ -379,8 +369,7 @@ public class ManagedProcess implements ManagedProcessState {
             // Safer to get() after destroy()
             asyncResult.get();
         } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw handleInterruptedException(e);
+            throw handleInterruptedException("destroy", e);
         } catch (ExecutionException e) {
             // process failed, likely because it was destroyed
         }
@@ -388,8 +377,6 @@ public class ManagedProcess implements ManagedProcessState {
         if (logger.isInfoEnabled()) {
             logger.info("Successfully destroyed {}", getProcLongName());
         }
-
-        isAlive = false;
     }
 
     // Java Doc shamelessly copy/pasted from java.lang.Thread#isAlive() :
@@ -401,8 +388,7 @@ public class ManagedProcess implements ManagedProcessState {
      */
     @Override
     public boolean isAlive() {
-        // NOPE: return !asyncResult.hasResult();
-        return isAlive;
+        return started && !asyncResult.isDone();
     }
 
     /**
@@ -413,11 +399,8 @@ public class ManagedProcess implements ManagedProcessState {
     public void notifyProcessHalted() {
         if (watchDog.isWatching()) {
             logger.error(
-                    "Have been notified that process is finished but watchdog belives its still"
-                            + " watching it");
+                    "Have been notified that process is finished but watchdog believes its still watching it");
         }
-
-        isAlive = false;
     }
 
     /**
@@ -425,16 +408,17 @@ public class ManagedProcess implements ManagedProcessState {
      *
      * @return the exit value of the subprocess represented by this <code>Process</code> object. by
      *     convention, the value <code>0</code> indicates normal termination.
-     * @exception ManagedProcessException if the subprocess represented by this <code>ManagedProcess
-     *     </code> object has not yet terminated, or has terminated without an exit value.
+     * @throws ManagedProcessException if the subprocess represented by this {@link ManagedProcess}
+     *     object has not yet terminated, or has terminated without an exit value.
+     * @throws ManagedProcessInterruptedException if the thread was interrupted while waiting
+     *     (unexpected in normal operation).
      */
     @Override
-    public int exitValue() throws ManagedProcessException {
+    public int exitValue() throws ManagedProcessException, ManagedProcessInterruptedException {
         try {
             return asyncResult.get();
         } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw handleInterruptedException(e);
+            throw handleInterruptedException("exitValue", e);
         } catch (Exception e) {
             throw new ManagedProcessException(
                     "No Exit Value, but an exception, is available for " + getProcLongName(), e);
@@ -447,17 +431,15 @@ public class ManagedProcess implements ManagedProcessState {
      * <p>Returns immediately if the process is already stopped (either because destroy() was
      * already explicitly called, or it terminated by itself).
      *
-     * <p>Note that if the process was attempted to be started but that start failed (maybe because
-     * the executable could not be found, or some underlying OS error) then it throws a
-     * ManagedProcessException.
-     *
-     * <p>It also throws a ManagedProcessException if {@link #start()} was never even called.
-     *
-     * @return exit value (or {@link #EXITVALUE_DESTROYED} if {@link #destroy()} was used)
-     * @throws ManagedProcessException see above
+     * @return exit value (or {@link #EXIT_VALUE_DESTROYED} if {@link #destroy()} was used)
+     * @throws ManagedProcessException if {@link #start()} was never even called or the process was
+     *     attempted to be started but that start failed (unknown executable, underlying OS error,
+     *     etc.)
+     * @throws ManagedProcessInterruptedException if the thread was interrupted while waiting
+     *     (unexpected in normal operation).
      */
     @Override
-    public int waitForExit() throws ManagedProcessException {
+    public int waitForExit() throws ManagedProcessException, ManagedProcessInterruptedException {
         logger.info(
                 "Thread is now going to wait for this process to terminate itself: {}",
                 getProcLongName());
@@ -469,12 +451,15 @@ public class ManagedProcess implements ManagedProcessState {
      * still running, taking no action).
      *
      * @param maxWaitUntilReturning Time to wait
-     * @return exit value, or {@link #EXITVALUE_STILL_RUNNING} if the timeout was reached, or {@link
-     *     #EXITVALUE_DESTROYED} if {@link #destroy()} was used
+     * @return exit value, or {@link #EXIT_VALUE_STILL_RUNNING} if the timeout was reached, or
+     *     {@link #EXIT_VALUE_DESTROYED} if {@link #destroy()} was used
      * @throws ManagedProcessException see above
+     * @throws ManagedProcessInterruptedException if the thread was interrupted while waiting
+     *     (unexpected in normal operation).
      */
     @Override
-    public int waitForExitMaxMs(long maxWaitUntilReturning) throws ManagedProcessException {
+    public int waitForExitMaxMs(long maxWaitUntilReturning)
+            throws ManagedProcessException, ManagedProcessInterruptedException {
         logger.info(
                 "Thread is now going to wait max. {}ms for process to terminate itself: {}",
                 maxWaitUntilReturning,
@@ -483,7 +468,7 @@ public class ManagedProcess implements ManagedProcessState {
     }
 
     protected int waitForExitMaxMsWithoutLog(long maxWaitUntilReturningInMs)
-            throws ManagedProcessException {
+            throws ManagedProcessException, ManagedProcessInterruptedException {
         assertWaitForIsValid();
         try {
             if (maxWaitUntilReturningInMs != -1) {
@@ -493,13 +478,12 @@ public class ManagedProcess implements ManagedProcessState {
             }
         } catch (TimeoutException e) {
             if (isAlive()) {
-                return EXITVALUE_STILL_RUNNING;
+                return EXIT_VALUE_STILL_RUNNING;
             } else {
-                return EXITVALUE_DESTROYED;
+                return EXIT_VALUE_DESTROYED;
             }
         } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw handleInterruptedException(e);
+            throw handleInterruptedException("waitForExitMaxMsWithoutLog", e);
         } catch (Exception e) {
             throw new ManagedProcessException(
                     getProcLongName() + " failed with Exception: " + getLastConsoleLines(), e);
@@ -516,7 +500,7 @@ public class ManagedProcess implements ManagedProcessState {
     @Override
     @CanIgnoreReturnValue
     public ManagedProcess waitForExitMaxMsOrDestroy(long maxWaitUntilDestroyTimeout)
-            throws ManagedProcessException {
+            throws ManagedProcessException, ManagedProcessInterruptedException {
         waitForExitMaxMs(maxWaitUntilDestroyTimeout);
         if (isAlive()) {
             logger.info(

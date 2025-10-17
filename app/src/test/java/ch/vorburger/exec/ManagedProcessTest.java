@@ -37,7 +37,8 @@ import java.util.Objects;
 class ManagedProcessTest {
 
     @Test
-    void onProcessCompleteInvokedOnCustomListener() throws IOException {
+    void onProcessCompleteInvokedOnCustomListener()
+            throws IOException, ManagedProcessInterruptedException {
         TestListener listener = new TestListener();
         SomeSelfTerminatingExec exec = someSelfTerminatingExec(listener);
         exec.proc.startAndWaitForConsoleMessageMaxMs(exec.msgToWaitFor, 1000);
@@ -59,7 +60,8 @@ class ManagedProcessTest {
     }
 
     @Test
-    void onProcessFailedInvokedOnCustomListenerWithExitValueChecker() throws IOException {
+    void onProcessFailedInvokedOnCustomListenerWithExitValueChecker()
+            throws IOException, ManagedProcessInterruptedException {
         TestListener listener = new TestListener();
         SomeSelfTerminatingExec exec = someSelfTerminatingFailingExec(listener, true);
         exec.proc.startAndWaitForConsoleMessageMaxMs(exec.msgToWaitFor, 1000);
@@ -100,7 +102,8 @@ class ManagedProcessTest {
     }
 
     @Test
-    void waitForSeenMessageIfAlreadyTerminated() throws IOException {
+    void waitForSeenMessageIfAlreadyTerminated()
+            throws IOException, ManagedProcessInterruptedException {
         SomeSelfTerminatingExec exec = someSelfTerminatingExec();
         ManagedProcess p = exec.proc;
         // this process should have terminated itself faster than in 1s (1000ms),
@@ -119,7 +122,7 @@ class ManagedProcessTest {
     }
 
     @Test
-    void selfTerminatingExec() throws IOException {
+    void selfTerminatingExec() throws IOException, ManagedProcessInterruptedException {
         SomeSelfTerminatingExec exec = someSelfTerminatingExec();
         ManagedProcess p = exec.proc;
 
@@ -216,7 +219,7 @@ class ManagedProcessTest {
     }
 
     @Test
-    void mustTerminateExec() throws ManagedProcessException {
+    void mustTerminateExec() throws ManagedProcessException, ManagedProcessInterruptedException {
         ManagedProcessBuilder pb;
         if (SystemUtils.IS_OS_WINDOWS) {
             pb = new ManagedProcessBuilder("notepad.exe");
@@ -239,7 +242,7 @@ class ManagedProcessTest {
     }
 
     @Test
-    void whoami() throws ManagedProcessException {
+    void whoami() throws ManagedProcessException, ManagedProcessInterruptedException {
         if (SystemUtils.IS_OS_WINDOWS) {
             return;
         }
@@ -251,7 +254,7 @@ class ManagedProcessTest {
     @Test
     @Disabled(
             "See https://github.com/vorburger/ch.vorburger.exec/issues/269, and fix this test somehow...")
-    void whoAmI() throws ManagedProcessException {
+    void whoAmI() throws ManagedProcessException, ManagedProcessInterruptedException {
         if (SystemUtils.IS_OS_WINDOWS) {
             return;
         }

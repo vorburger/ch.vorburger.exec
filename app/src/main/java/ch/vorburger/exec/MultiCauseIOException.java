@@ -34,7 +34,7 @@ import java.util.List;
 @SuppressWarnings("IdentifierName") // https://errorprone.info/bugpattern/IdentifierName
 public class MultiCauseIOException extends IOException {
 
-    @Serial private static final long serialVersionUID = -2397961845533184622L;
+    @Serial private static final long serialVersionUID = 1L;
 
     // Code review comments most welcome; I'm not sure if I'm doing this right 100% right?
     // Doesn't something like this (or helpers for it) exist else? Couldn't find in commons-lang or
