@@ -19,12 +19,8 @@
  */
 package ch.vorburger.exec;
 
-import static ch.vorburger.exec.OutputStreamType.STDERR;
-import static ch.vorburger.exec.OutputStreamType.STDOUT;
-
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.Var;
-
 import org.apache.commons.exec.*;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.io.IOUtils;
@@ -39,9 +35,11 @@ import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.function.IntPredicate;
+
+import static ch.vorburger.exec.OutputStreamType.STDERR;
+import static ch.vorburger.exec.OutputStreamType.STDOUT;
 
 /**
  * Managed OS Process (Executable, Program, Command). Created by {@link
@@ -81,8 +79,8 @@ public class ManagedProcess implements ManagedProcessState {
     private final boolean destroyOnShutdown;
     private final int consoleBufferMaxLines;
     private final OutputStreamLogDispatcher outputStreamLogDispatcher;
-    private final @Nullable MultiOutputStream stdout;
-    private final @Nullable MultiOutputStream stderr;
+    private final MultiOutputStream stdout;
+    private final MultiOutputStream stderr;
 
     private volatile boolean isAlive = false;
     private @Nullable String procShortName;
@@ -197,11 +195,9 @@ public class ManagedProcess implements ManagedProcessState {
         executor.setStreamHandler(outputHandler);
 
         String pid = getProcShortName();
-        Objects.requireNonNull(stdout)
-                .addOutputStream(
+        stdout.addOutputStream(
                         new SLF4jLogOutputStream(logger, pid, STDOUT, outputStreamLogDispatcher));
-        Objects.requireNonNull(stderr)
-                .addOutputStream(
+        stderr.addOutputStream(
                         new SLF4jLogOutputStream(logger, pid, STDERR, outputStreamLogDispatcher));
 
         if (consoleBufferMaxLines > 0) {
@@ -278,10 +274,8 @@ public class ManagedProcess implements ManagedProcessState {
 
         try (CheckingConsoleOutputStream checkingConsoleOutputStream =
                 new CheckingConsoleOutputStream(messageInConsole)) {
-            if (stdout != null && stderr != null) {
-                stdout.addOutputStream(checkingConsoleOutputStream);
-                stderr.addOutputStream(checkingConsoleOutputStream);
-            }
+            stdout.addOutputStream(checkingConsoleOutputStream);
+            stderr.addOutputStream(checkingConsoleOutputStream);
 
             @Var long timeAlreadyWaited = 0;
             logger.info(
@@ -318,10 +312,8 @@ public class ManagedProcess implements ManagedProcessState {
                     return true;
                 }
             } finally {
-                if (stdout != null && stderr != null) {
-                    stdout.removeOutputStream(checkingConsoleOutputStream);
-                    stderr.removeOutputStream(checkingConsoleOutputStream);
-                }
+                stdout.removeOutputStream(checkingConsoleOutputStream);
+                stderr.removeOutputStream(checkingConsoleOutputStream);
             }
         }
     }
