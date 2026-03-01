@@ -27,6 +27,7 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.exec.util.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,8 +37,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-
-import javax.annotation.Nullable;
 
 /**
  * Builder for ManagedProcess.
@@ -62,18 +61,17 @@ public class ManagedProcessBuilder {
 
     protected final CommandLine commonsExecCommandLine;
     protected final Map<String, String> environment;
-    @Nullable protected File directory;
-    @Nullable protected InputStream inputStream;
+    protected @Nullable File directory;
+    protected @Nullable InputStream inputStream;
     protected boolean destroyOnShutdown = true;
     protected int consoleBufferMaxLines = 100;
     protected OutputStreamLogDispatcher outputStreamLogDispatcher = new OutputStreamLogDispatcher();
-    @Nullable protected ManagedProcessListener listener;
+    protected @Nullable ManagedProcessListener listener;
     protected List<OutputStream> stdOuts = new ArrayList<>();
     protected List<OutputStream> stdErrs = new ArrayList<>();
     protected Function<Integer, Boolean> isSuccessExitValueChecker = exitValue -> exitValue == 0;
 
-    @Nullable
-    public ManagedProcessListener getProcessListener() {
+    public @Nullable ManagedProcessListener getProcessListener() {
         return listener;
     }
 
@@ -221,8 +219,7 @@ public class ManagedProcessBuilder {
      *
      * @see ProcessBuilder#directory()
      */
-    @Nullable
-    public File getWorkingDirectory() {
+    public @Nullable File getWorkingDirectory() {
         return directory;
     }
 
@@ -314,7 +311,8 @@ public class ManagedProcessBuilder {
             File dir = exec.getParentFile();
             if (dir == null) {
                 throw new IllegalStateException(
-                        "directory MUST be set (and could not be auto-determined from executable, although it was a File)");
+                        "directory MUST be set (and could not be auto-determined from executable,"
+                                + " although it was a File)");
             }
             setWorkingDirectory(dir);
             // DO NOT } else {

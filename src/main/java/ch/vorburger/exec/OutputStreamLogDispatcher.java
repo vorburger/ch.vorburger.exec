@@ -19,9 +19,8 @@
  */
 package ch.vorburger.exec;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.event.Level;
-
-import javax.annotation.Nullable;
 
 /**
  * Dispatcher of STDOUT vs STDIN output to slf4j logger levels.
@@ -59,9 +58,8 @@ public class OutputStreamLogDispatcher {
      *     implementation returns {@link org.slf4j.event.Level#INFO} for STDOUT and {@link
      *     org.slf4j.event.Level#ERROR} for STDERR.
      */
-    @Nullable
     @SuppressWarnings("unused")
-    public Level dispatch(OutputStreamType type, String line) {
+    public @Nullable Level dispatch(OutputStreamType type, String line) {
         return switch (type) {
             case STDOUT -> Level.INFO;
             default -> Level.ERROR; // STDERR
