@@ -66,10 +66,11 @@
             <arg>-Xlint:all,-options</arg>
             <arg>-XDcompilePolicy=simple</arg>
             <arg>--should-stop=ifError=FLOW</arg>
+            <arg>-XDaddTypeAnnotationsToSymbol=true</arg>
             <arg>-Xplugin:ErrorProne -XepAllDisabledChecksAsWarnings
-              -Xep:BooleanParameter:OFF -Xep:AndroidJdkLibsChecker:OFF
-              -Xep:Varifier:OFF</arg>
-            <!-- TODO Remove Varifier when switching from 8 to Java 11 -->
+              -Xep:BooleanParameter:OFF
+              -Xep:Varifier:OFF
+              -Xep:AddNullMarkedToClass:OFF</arg>
           </compilerArgs>
           <annotationProcessorPaths>
             <path>
