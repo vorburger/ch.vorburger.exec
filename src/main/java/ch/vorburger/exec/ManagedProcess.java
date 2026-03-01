@@ -93,8 +93,8 @@ public class ManagedProcess implements ManagedProcessState {
     private final MultiOutputStream stderr;
 
     private volatile boolean isAlive = false;
-    private String procShortName;
-    private RollingLogOutputStream console;
+    @Nullable private String procShortName;
+    @Nullable private RollingLogOutputStream console;
 
     /**
      * Package local constructor.
@@ -119,9 +119,9 @@ public class ManagedProcess implements ManagedProcessState {
             "deprecation") // TODO https://github.com/vorburger/ch.vorburger.exec/issues/189
     ManagedProcess(
             CommandLine commandLine,
-            File directory,
+            @Nullable File directory,
             Map<String, String> environment,
-            InputStream input,
+            @Nullable InputStream input,
             boolean destroyOnShutdown,
             int consoleBufferMaxLines,
             OutputStreamLogDispatcher outputStreamLogDispatcher,
@@ -180,10 +180,6 @@ public class ManagedProcess implements ManagedProcessState {
 
     // stolen from commons-io IOUtiles (@since v2.5)
     protected BufferedInputStream buffer(InputStream inputStream) {
-        // reject null early on rather than waiting for IO operation to fail
-        if (inputStream == null) { // not checked by BufferedInputStream
-            throw new NullPointerException("inputStream == null");
-        }
         return inputStream instanceof BufferedInputStream bufferedInputStream
                 ? bufferedInputStream
                 : new BufferedInputStream(inputStream);
@@ -296,10 +292,8 @@ public class ManagedProcess implements ManagedProcessState {
 
         CheckingConsoleOutputStream checkingConsoleOutputStream =
                 new CheckingConsoleOutputStream(messageInConsole);
-        if (stdout != null && stderr != null) {
-            stdout.addOutputStream(checkingConsoleOutputStream);
-            stderr.addOutputStream(checkingConsoleOutputStream);
-        }
+        stdout.addOutputStream(checkingConsoleOutputStream);
+        stderr.addOutputStream(checkingConsoleOutputStream);
 
         @Var long timeAlreadyWaited = 0;
         logger.info(
@@ -336,10 +330,8 @@ public class ManagedProcess implements ManagedProcessState {
                 return true;
             }
         } finally {
-            if (stdout != null && stderr != null) {
-                stdout.removeOutputStream(checkingConsoleOutputStream);
-                stderr.removeOutputStream(checkingConsoleOutputStream);
-            }
+            stdout.removeOutputStream(checkingConsoleOutputStream);
+            stderr.removeOutputStream(checkingConsoleOutputStream);
         }
     }
 

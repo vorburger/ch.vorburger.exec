@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
+
 /**
  * Builder for ManagedProcess.
  *
@@ -60,16 +62,17 @@ public class ManagedProcessBuilder {
 
     protected final CommandLine commonsExecCommandLine;
     protected final Map<String, String> environment;
-    protected File directory;
-    protected InputStream inputStream;
+    @Nullable protected File directory;
+    @Nullable protected InputStream inputStream;
     protected boolean destroyOnShutdown = true;
     protected int consoleBufferMaxLines = 100;
     protected OutputStreamLogDispatcher outputStreamLogDispatcher = new OutputStreamLogDispatcher();
-    protected ManagedProcessListener listener;
+    @Nullable protected ManagedProcessListener listener;
     protected List<OutputStream> stdOuts = new ArrayList<>();
     protected List<OutputStream> stdErrs = new ArrayList<>();
     protected Function<Integer, Boolean> isSuccessExitValueChecker = exitValue -> exitValue == 0;
 
+    @Nullable
     public ManagedProcessListener getProcessListener() {
         return listener;
     }
@@ -218,6 +221,7 @@ public class ManagedProcessBuilder {
      *
      * @see ProcessBuilder#directory()
      */
+    @Nullable
     public File getWorkingDirectory() {
         return directory;
     }
