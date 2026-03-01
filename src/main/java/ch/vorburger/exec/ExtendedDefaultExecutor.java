@@ -20,15 +20,14 @@
 package ch.vorburger.exec;
 
 import org.apache.commons.exec.DefaultExecutor;
+import org.jspecify.annotations.Nullable;
 
 import java.util.function.Function;
-
-import javax.annotation.Nullable;
 
 @SuppressWarnings("deprecation") // TODO https://github.com/vorburger/ch.vorburger.exec/issues/189
 class ExtendedDefaultExecutor extends DefaultExecutor {
 
-    @Nullable private Function<Integer, Boolean> exitValueChecker;
+    private @Nullable Function<Integer, Boolean> exitValueChecker;
 
     void setIsSuccessExitValueChecker(Function<Integer, Boolean> exitValueChecker) {
         this.exitValueChecker = exitValueChecker;

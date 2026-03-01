@@ -28,10 +28,9 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.lang3.SystemUtils;
+import org.jspecify.annotations.Nullable;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import javax.annotation.Nullable;
 
 /**
  * Tests ManagedProcess.
@@ -180,8 +179,11 @@ public class ManagedProcessTest {
             r.proc =
                     new ManagedProcessBuilder("echo")
                             .addArgument(
-                                    "\"Lorem ipsum dolor sit amet, consectetur adipisci elit, "
-                                            + " sed eiusmod tempor incidunt ut \nlabore et dolore magna aliqua.\"")
+                                    """
+                                    "Lorem ipsum dolor sit amet, consectetur adipisci elit,  sed\
+                                     eiusmod tempor incidunt ut\s
+                                    labore et dolore magna aliqua.\"\
+                                    """)
                             .setProcessListener(listener)
                             .build();
             r.msgToWaitFor = "incidunt";
@@ -253,7 +255,8 @@ public class ManagedProcessTest {
 
     @Test
     @Ignore(
-            "See https://github.com/vorburger/ch.vorburger.exec/issues/269, and fix this test somehow...") // TODO FIXME
+            "See https://github.com/vorburger/ch.vorburger.exec/issues/269, and fix this test"
+                    + " somehow...") // TODO FIXME
     public void whoAmI() throws Exception {
         if (SystemUtils.IS_OS_WINDOWS) {
             return;

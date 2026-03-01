@@ -31,6 +31,7 @@ import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.ProcessDestroyer;
 import org.apache.commons.exec.PumpStreamHandler;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,8 +49,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
-
-import javax.annotation.Nullable;
 
 /**
  * Managed OS Process (Executable, Program, Command). Created by {@link
@@ -85,7 +84,7 @@ public class ManagedProcess implements ManagedProcessState {
             new LoggingShutdownHookProcessDestroyer();
     private final Map<String, String> environment;
     private final CompletableFuture<Integer> asyncResult;
-    @Nullable private final InputStream input;
+    private final @Nullable InputStream input;
     private final boolean destroyOnShutdown;
     private final int consoleBufferMaxLines;
     private final OutputStreamLogDispatcher outputStreamLogDispatcher;
@@ -93,8 +92,8 @@ public class ManagedProcess implements ManagedProcessState {
     private final MultiOutputStream stderr;
 
     private volatile boolean isAlive = false;
-    @Nullable private String procShortName;
-    @Nullable private RollingLogOutputStream console;
+    private @Nullable String procShortName;
+    private @Nullable RollingLogOutputStream console;
 
     /**
      * Package local constructor.
@@ -147,7 +146,7 @@ public class ManagedProcess implements ManagedProcessState {
         this.consoleBufferMaxLines = consoleBufferMaxLines;
         this.outputStreamLogDispatcher = outputStreamLogDispatcher;
         this.asyncResult = new CompletableFuture<>();
-        CompletableFuture<Void> unused =
+        CompletableFuture<@Nullable Void> unused =
                 this.asyncResult.<Void>handle(
                         (result, e) -> {
                             if (e == null) {

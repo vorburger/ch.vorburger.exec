@@ -16,5 +16,8 @@
   // TODO https://github.com/eclipse-jdtls/eclipse.jdt.ls/issues/3050
   "java.compile.nullAnalysis.mode": "automatic",
   "java.completion.importOrder": ["#", "", "javax", "java"], //# is static
-  "java.completion.favoriteStaticMembers": ["com.google.common.truth.Truth.*"]
+  "java.completion.favoriteStaticMembers": ["com.google.common.truth.Truth.*"],
+  "chat.tools.terminal.autoApprove": {
+    "./mvnw": true
+  }
 }
