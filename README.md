@@ -77,7 +77,7 @@ Similar Projects
 Related Projects
 ---
 
-https://github.com/vorburger/ch.vorburger.fswatch is another handy small library from the same author.
+[ch.vorburger.fswatch](https://github.com/vorburger/ch.vorburger.fswatch) is another handy small library from the same author.
 
 For the _expect-like_ functionality, from https://en.wikipedia.org/wiki/Expect#Java, note (in no particular order):
 
