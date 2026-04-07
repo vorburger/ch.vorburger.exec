@@ -55,9 +55,7 @@ public class ManagedProcessTest {
         SomeSelfTerminatingExec exec = someSelfTerminatingFailingExec(listener, false);
         assertThrows(
                 ManagedProcessException.class,
-                () -> {
-                    exec.proc.startAndWaitForConsoleMessageMaxMs(exec.msgToWaitFor, 1000);
-                });
+                () -> exec.proc.startAndWaitForConsoleMessageMaxMs(exec.msgToWaitFor, 1000));
         assertEquals(Integer.MIN_VALUE, listener.expectedExitValue);
         assertNotEquals(Integer.MIN_VALUE, listener.failureExitValue);
         assertNotNull(listener.t);
