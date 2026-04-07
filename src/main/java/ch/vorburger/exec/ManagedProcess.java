@@ -441,7 +441,7 @@ public class ManagedProcess implements ManagedProcessState {
      *
      * @return the exit value of the subprocess represented by this <code>Process</code> object. by
      *     convention, the value <code>0</code> indicates normal termination.
-     * @exception ManagedProcessException if the subprocess represented by this <code>ManagedProcess
+     * @throws ManagedProcessException if the subprocess represented by this <code>ManagedProcess
      *     </code> object has not yet terminated, or has terminated without an exit value.
      */
     @Override
