@@ -215,7 +215,8 @@ public class CircularFifoQueueTest {
     @Test
     public void emptyIteratorNext() {
         CircularFifoQueue<String> queue = new CircularFifoQueue<>(3);
-        assertThrows(NoSuchElementException.class, () -> queue.iterator().next());
+        Iterator<String> iterator = queue.iterator();
+        assertThrows(NoSuchElementException.class, () -> iterator.next());
     }
 
     @Test
